@@ -1,7 +1,8 @@
 import logging
 import sys
 from argparse import ArgumentParser
-from mflow_node.stream_node import start_stream_node
+
+from mflow_nodes.stream_node import start_stream_node
 from mflow_processor.lz4_compressor import LZ4CompressionProcessor
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)

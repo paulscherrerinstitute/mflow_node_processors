@@ -1,8 +1,8 @@
 import logging
 import sys
 from argparse import ArgumentParser
-from bitshuffle.h5 import H5_COMPRESS_LZ4
-from mflow_node.stream_node import start_stream_node
+
+from mflow_nodes.stream_node import start_stream_node
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
 from mflow_processor.utils import writer_plugins
 
@@ -25,10 +25,12 @@ parameters = {"dataset_name": "data",
 if input_args.output_file:
     parameters["output_file"] = input_args.output_file
 
+
 plugins = [writer_plugins.write_frame_index_to_dataset(input_args.frame_index_dataset)]
 
 start_stream_node(instance_name=input_args.instance_name,
                   processor=HDF5ChunkedWriterProcessor(plugins=plugins),
                   processor_parameters=parameters,
                   listening_address=input_args.listening_address,
-                  control_port=input_args.rest_port)
+                  control_port=input_args.rest_port,
+                  receive_raw=input_args.raw)

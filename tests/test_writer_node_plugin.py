@@ -3,12 +3,12 @@ from time import sleep
 
 import h5py
 import numpy as np
-from tests.utils.generate_test_stream import generate_test_array_stream
+from mflow_nodes.test_tools.mflow_generate_test_stream import generate_test_array_stream
 
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
 from mflow_processor.utils import writer_plugins
-from tests.utils.receiver_helper import setup_receiver, cleanup_receiver, default_frame_shape, default_number_of_frames, \
-    default_output_file
+from tests.utils.receiver_helper import setup_receiver, cleanup_receiver, default_frame_shape, \
+    default_number_of_frames, default_output_file
 
 frame_index_dataset_name = "group1/group2/dataset"
 

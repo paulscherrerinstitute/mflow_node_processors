@@ -1,6 +1,6 @@
 import os
 
-from mflow_node.stream_node import ExternalProcessWrapper, get_zmq_listener
+from mflow_nodes.stream_node import ExternalProcessWrapper, get_zmq_listener
 
 default_frame_shape = (4, 4)
 default_number_of_frames = 16

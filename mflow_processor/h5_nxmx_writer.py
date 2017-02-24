@@ -1,17 +1,18 @@
 import glob
 import os
 from logging import getLogger
-
 import h5py
 
-from mflow_node.processor import StreamProcessor, MFlowForwarder
+from mflow_nodes.processors.base import BaseProcessor
+from mflow_nodes.rest_api import rest_client
+from mflow_nodes.stream_tools.mflow_forwarder import MFlowForwarder
+
 from mflow_processor.utils.h5_utils import populate_h5_file
-from mflow_rest_api import rest_client
-from mflow_processor.utils.nxmx_utils import create_external_data_files_links, convert_header_to_dataset_values, NUMBER_OF_FRAMES_FROM_HEADER, \
-    MASTER_FILENAME_SUFFIX, DATA_FILENAME_TEMPLATE, dataset_types
+from mflow_processor.utils.nxmx_utils import create_external_data_files_links, convert_header_to_dataset_values, \
+    NUMBER_OF_FRAMES_FROM_HEADER, MASTER_FILENAME_SUFFIX, DATA_FILENAME_TEMPLATE, dataset_types
 
 
-class HDF5nxmxWriter(StreamProcessor):
+class HDF5nxmxWriter(BaseProcessor):
     """
     H5 NXMX Master file writer
 

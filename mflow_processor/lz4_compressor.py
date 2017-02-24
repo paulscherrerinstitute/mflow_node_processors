@@ -3,7 +3,7 @@ import struct
 from logging import getLogger
 
 import bitshuffle.h5
-from mflow_processor.proxy import ProxyProcessor
+from mflow_nodes.processors.proxy import ProxyProcessor
 
 
 class LZ4CompressionProcessor(ProxyProcessor):
@@ -56,11 +56,11 @@ class LZ4CompressionProcessor(ProxyProcessor):
         return new_header, compressed_data
 
     def process_message(self, message):
-        frame_header = message.data["header"]
-        frame_data = message.data["data"][0]
+        frame_header = message.get_header()
+        frame_data = message.get_data()
 
         self._logger.debug("Received frame '%d'." % message.get_frame_index())
         new_header, compressed_bytes = self._compress_lz4(frame_header, frame_data)
 
-        self._zmq_forwarder.stream.forward(json.dumps(new_header).encode(), send_more=True, block=True)
-        self._zmq_forwarder.stream.forward(compressed_bytes, block=True)
+        self._zmq_forwarder.stream.send(json.dumps(new_header).encode(), send_more=True, block=True)
+        self._zmq_forwarder.stream.send(compressed_bytes, block=True)

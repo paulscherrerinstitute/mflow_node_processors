@@ -1,12 +1,13 @@
 import h5py
 from logging import getLogger
-from mflow_node.processor import StreamProcessor
+
+from mflow_nodes.processors.base import BaseProcessor
 
 from mflow_processor.utils.h5_utils import populate_h5_file, create_dataset, compact_dataset, expand_dataset, \
     set_dataset_attributes
 
 
-class HDF5ChunkedWriterProcessor(StreamProcessor):
+class HDF5ChunkedWriterProcessor(BaseProcessor):
     """
     H5 chunked writer
 

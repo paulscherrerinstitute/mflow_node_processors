@@ -2,7 +2,8 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
-from mflow_node.stream_node import start_stream_node
+
+from mflow_nodes.stream_node import start_stream_node
 from mflow_processor.h5_nxmx_writer import HDF5nxmxWriter
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)

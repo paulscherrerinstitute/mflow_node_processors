@@ -4,8 +4,6 @@ from logging import getLogger
 import h5py
 import numpy as np
 
-from mflow_processor.utils.h5_utils import _logger
-
 _logger = getLogger(__name__)
 
 MASTER_FILENAME_SUFFIX = "_master.h5"
