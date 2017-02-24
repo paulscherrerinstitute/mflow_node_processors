@@ -7,7 +7,7 @@ setup(
     description="mflow stream node processors",
     author='Paul Scherrer Institute',
     author_email='andrej.babic@psi.ch',
-    requires=["mflow", "h5py", "numpy", "bitshuffle", 'requests'],
+    requires=["mflow_nodes", "h5py", "numpy", "bitshuffle"],
 
     scripts=['scripts/write_node.py',
              'scripts/write_jungfrau_node.py',

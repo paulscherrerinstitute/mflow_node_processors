@@ -13,17 +13,15 @@ requirements:
         - python
     run:
         - python
-        - mflow >=0.0.16
-        - bitshuffle ==0.2.4
-        - bottle
-        - h5py >=2.7.*
-        - hdf5 ==1.8.17
         - numpy
-        - requests
+        - hdf5 ==1.8.17
+        - h5py >=2.7.*
+        - bitshuffle ==0.2.4
+        - mflow_nodes >=0.0.3
 
 test:
   source_files:
     - tests/
 
 about:
-    summary: "Mflow node processors."
+    summary: "mflow node processors"
