@@ -1,6 +1,7 @@
 import logging
 import sys
 from argparse import ArgumentParser
+
 from mflow_node.stream_node import start_stream_node
 from mflow_processor.proxy import ProxyProcessor
 

@@ -1,10 +1,8 @@
 import json
 import struct
-
-import bitshuffle.h5
-
 from logging import getLogger
 
+import bitshuffle.h5
 from mflow_processor.proxy import ProxyProcessor
 
 
