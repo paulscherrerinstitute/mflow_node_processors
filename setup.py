@@ -2,12 +2,12 @@
 from setuptools import setup
 
 setup(
-    name='mflow_nodes',
-    version="0.0.2",
-    description="mflow stream nodes and their processors",
+    name='mflow_node_processors',
+    version="0.0.1",
+    description="mflow stream node processors",
     author='Paul Scherrer Institute',
     author_email='andrej.babic@psi.ch',
-    requires=["bottle", "mflow", "h5py", "numpy", "bitshuffle", 'requests'],
+    requires=["mflow", "h5py", "numpy", "bitshuffle", 'requests'],
 
     scripts=['scripts/write_node.py',
              'scripts/write_jungfrau_node.py',
@@ -15,12 +15,8 @@ setup(
              "scripts/compression_node.py",
              "scripts/nxmx_node.py"],
 
-    packages=['mflow_node',
-              'mflow_processor',
-              'mflow_processor.utils',
-              'mflow_rest_api',
-              'mflow_tools',
-              'mflow_tools.message_handlers'],
+    packages=['mflow_processor',
+              'mflow_processor.utils'],
 
     include_package_data=True
 )
