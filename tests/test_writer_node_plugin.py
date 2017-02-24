@@ -3,10 +3,10 @@ from time import sleep
 
 import h5py
 import numpy as np
+from tests.utils.generate_test_stream import generate_test_array_stream
 
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
 from mflow_processor.utils import writer_plugins
-from tests.utils.generate_test_stream import generate_test_array_stream
 from tests.utils.receiver_helper import setup_receiver, cleanup_receiver, default_frame_shape, default_number_of_frames, \
     default_output_file
 

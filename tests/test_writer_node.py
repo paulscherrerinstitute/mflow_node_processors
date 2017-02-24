@@ -1,10 +1,11 @@
 import os
-import h5py
 import unittest
 from time import sleep
 
-from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
+import h5py
 from tests.utils.generate_test_stream import generate_test_array_stream, generate_frame_data
+
+from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
 from tests.utils.receiver_helper import setup_receiver, cleanup_receiver, default_output_file, default_dataset_name, \
     default_number_of_frames, default_frame_shape
 
