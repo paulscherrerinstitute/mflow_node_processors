@@ -3,7 +3,7 @@ import unittest
 from time import sleep
 
 import h5py
-from mflow_nodes.test_tools.mflow_generate_test_stream import generate_test_array_stream, generate_frame_data
+from mflow_nodes.test_tools.m_generate_test_stream import generate_test_array_stream, generate_frame_data
 
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
 from tests.utils.receiver_helper import setup_receiver, cleanup_receiver, default_output_file, default_dataset_name, \

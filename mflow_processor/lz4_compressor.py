@@ -5,6 +5,8 @@ from logging import getLogger
 import bitshuffle.h5
 from mflow_nodes.processors.proxy import ProxyProcessor
 
+BITSHUFFLE_ENCODING_STRING = "bs16-lz4<"
+
 
 class LZ4CompressionProcessor(ProxyProcessor):
     """
@@ -51,7 +53,7 @@ class LZ4CompressionProcessor(ProxyProcessor):
         compressed_data = compress_as_chunk(data, self.block_size)
 
         new_header = header.copy()
-        new_header["encoding"] = "bitshuffle_lz4"
+        new_header["encoding"] = BITSHUFFLE_ENCODING_STRING
 
         return new_header, compressed_data
 

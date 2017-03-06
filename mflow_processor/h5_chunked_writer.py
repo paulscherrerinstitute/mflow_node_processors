@@ -185,4 +185,6 @@ class HDF5ChunkedWriterProcessor(BaseProcessor):
 
     def stop(self):
         self._logger.debug("Writer stopped.")
-        self._close_file()
+
+        if self._file:
+            self._close_file()

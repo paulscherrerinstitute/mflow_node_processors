@@ -9,11 +9,11 @@ setup(
     author_email='andrej.babic@psi.ch',
     requires=["mflow_nodes", "h5py", "numpy", "bitshuffle"],
 
-    scripts=['scripts/write_node.py',
-             'scripts/write_jungfrau_node.py',
-             'scripts/proxy_node.py',
-             "scripts/compression_node.py",
-             "scripts/nxmx_node.py"],
+    scripts=['scripts/m_write_node.py',
+             'scripts/m_write_jungfrau_node.py',
+             'scripts/m_proxy_node.py',
+             "scripts/m_compression_node.py",
+             "scripts/m_nxmx_node.py"],
 
     packages=['mflow_processor',
               'mflow_processor.utils'],

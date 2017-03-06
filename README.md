@@ -60,25 +60,25 @@ There are already several processors and the scripts to run them in this library
 running scripts should be automatically added to your path, so you should be able to run 
 them from anywhere.
 
+All mflow related executables start with the prefix **m\_** so you can use the autocomplete functionality in bash 
+(by writing in the console "m_" and pressing TAB) to discover the available scripts.
+
 ### Running nodes
 The scripts for running the existing nodes are located under the **scripts/** folder. To start a node, execute the 
 script with the required parameters (which parameters you need to provide depends on the node type).
 
 The currently available scripts are:
 
-- **Proxy node** (proxy_node.py): Outputs the stream to the console and forwards it to the next node.
-- **Compression node** (compression_node.py): Compresses the stream using the bitshuffle LZ4 algorithm.
-- **Writer node** (writer_node.py): Writes the stream to a H5 file.
-- **NXMX node** (nxmx_node.py): Creates the master H5 file in the NXMX standard and forwards the stream.
-- **Jungfrau node** (write_jungfrau_node.py): H5 writer node with an additional plugin for the Jungfrau detector.
+- **Proxy node** (m_proxy_node.py): Outputs the stream to the console and forwards it to the next node.
+- **Compression node** (m_compression_node.py): Compresses the stream using the bitshuffle LZ4 algorithm.
+- **Writer node** (m_writer_node.py): Writes the stream to a H5 file.
+- **NXMX node** (m_nxmx_node.py): Creates the master H5 file in the NXMX standard and forwards the stream.
+- **Jungfrau node** (m_write_jungfrau_node.py): H5 writer node with an additional plugin for the Jungfrau detector.
 
 The documentation for each node should be located at the end of this document (chapter **Processors documentation**), 
 but some help if also available if you run the scripts with the '-h' parameter.
 
 ## Run a sample node chain
-
-**WARNING**: Due to a bug in the mflow forward function raw messages cannot be forwarded by the proxy.
-Consequently this example will not work.
 
 In order to better illustrate how nodes are supposed to be used, we are going to generate a test mflow stream, output 
 its content to the console, compress the stream, output the compressed stream to the console, and finally write it into 
@@ -91,7 +91,7 @@ Once you have installed the library, run the following commands, each in a separ
 #   - listen on localhost port 40000
 #   - forward the stream to localhost port 40001
 #   - start the web interface on port 8080
-proxy_node.py proxy tcp://127.0.0.1:40000 tcp://127.0.0.1:40001 --rest_port 8080
+m_proxy_node.py proxy tcp://127.0.0.1:40000 tcp://127.0.0.1:40001 --rest_port 8080
 ```
 
 ```bash
@@ -100,7 +100,7 @@ proxy_node.py proxy tcp://127.0.0.1:40000 tcp://127.0.0.1:40001 --rest_port 8080
 #   - listen on localhost port 40001
 #   - forward the stream to localhost port 40002
 #   - start the web interface on port 8081
-compression_node.py compress tcp://127.0.0.1:40001 tcp://127.0.0.1:40002 --rest_port 8081
+m_compression_node.py compress tcp://127.0.0.1:40001 tcp://127.0.0.1:40002 --rest_port 8081
 ```
 
 ```bash
@@ -111,7 +111,7 @@ compression_node.py compress tcp://127.0.0.1:40001 tcp://127.0.0.1:40002 --rest_
 #   - start the web interface on port 8082
 #   - receive messages in raw format, because the stream is compressed, and it cannot
 #     be automatically reinterpreted as an array.
-proxy_node.py proxy2 tcp://127.0.0.1:40002 tcp://127.0.0.1:40003 --rest_port 8082 --raw
+m_proxy_node.py proxy2 tcp://127.0.0.1:40002 tcp://127.0.0.1:40003 --rest_port 8082 --raw
 ```
 ```bash
 # Start a writer node:
@@ -121,7 +121,7 @@ proxy_node.py proxy2 tcp://127.0.0.1:40002 tcp://127.0.0.1:40003 --rest_port 808
 #   - start the web interface on port 8083
 #   - receive message in raw format, because the stream is compressed, and it cannot
 #     be automatically reinterpreted as an array.
-write_node.py write tcp://127.0.0.1:40003 --output_file sample_output.h5 --rest_port 8083 --raw
+m_write_node.py write tcp://127.0.0.1:40003 --output_file sample_output.h5 --rest_port 8083 --raw
 ```
 
 Once you node chain is ready, you have to start each node and generate the test stream in yet another terminal. 
@@ -145,7 +145,7 @@ curl -X PUT 0.0.0.0:8083/api/v1/write/
 
 # Generate the test stream:
 #   - Send the stream to tcp://127.0.0.1:40000, the first node in the chain.
-mflow_generate_test_stream.py tcp://127.0.0.1:40000
+m_generate_test_stream.py tcp://127.0.0.1:40000
 
 # Stop the writer:
 curl -X DELETE 0.0.0.0:8083/api/v1/write/
