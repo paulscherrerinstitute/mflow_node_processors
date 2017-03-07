@@ -12,10 +12,10 @@ logging.getLogger("requests").setLevel(logging.ERROR)
 
 parser = ArgumentParser()
 parser.add_argument("instance_name", type=str, help="Name of the node instance. Should be unique.")
-parser.add_argument("listening_address", type=str, help="Listening address for mflow connection.\n"
-                                                        "Example: tcp://127.0.0.1:40000")
-parser.add_argument("forwarding_address", type=str, help="Forwarding address for mflow connection.\n"
-                                                         "Example: tcp://127.0.0.1:40001")
+parser.add_argument("connect_address", type=str, help="Connect address for mflow.\n"
+                                                      "Example: tcp://127.0.0.1:40000")
+parser.add_argument("binding_address", type=str, help="Binding address for mflow forwarding.\n"
+                                                      "Example: tcp://127.0.0.1:40001")
 parser.add_argument("writer_control_address", type=str, help="URL of the H5 writer node REST Api.\n"
                                                              "Example: http://127.0.0.1:41001")
 parser.add_argument("--config_file", type=str, help="Config file with the detector properties.")
@@ -43,8 +43,8 @@ if input_args.config_file:
         parameters.update(json.load(config_file))
 
 start_stream_node(instance_name=input_args.instance_name,
-                  processor=HDF5nxmxWriter(h5_writer_stream_address=input_args.forwarding_address,
+                  processor=HDF5nxmxWriter(h5_writer_stream_address=input_args.binding_address,
                                            h5_writer_control_address=input_args.writer_control_address),
                   processor_parameters=parameters,
-                  listening_address=input_args.listening_address,
+                  connection_address=input_args.connect_address,
                   control_port=input_args.rest_port)

@@ -104,6 +104,8 @@ class HDF5ChunkedWriterProcessor(BaseProcessor):
                                        dtype,
                                        self.compression,
                                        self.compression_opts)
+        # Record the dataset size for later comparison.
+        self._current_dataset_size = self._dataset.shape[0]
 
         self._current_frame_chunk = frame_chunk
 
@@ -153,35 +155,36 @@ class HDF5ChunkedWriterProcessor(BaseProcessor):
 
             frame_index -= (frame_chunk - 1) * self.frames_per_file
         # The file is not open yet.
-        elif not self._file:
+        elif self._file is None:
             self._create_file(frame_size, dtype)
 
         # If the current frame does not fit in the dataset, expand it.
-        if not frame_index < self._dataset.shape[0]:
-            expand_dataset(self._dataset, frame_index)
+        if not frame_index < self._current_dataset_size:
+            self._current_dataset_size = expand_dataset(self._dataset, frame_index)
 
         # Keep track of the max frame index to shrink the dataset before closing it.
-        self._max_frame_index = max(self._max_frame_index, frame_index)
+        if frame_index > self._max_frame_index:
+            self._max_frame_index = frame_index
 
         return frame_index
 
     def process_message(self, message):
-        relative_frame_index = self._prepare_storage_for_frame(message.get_frame_index(),
+        frame_index = message.get_frame_index()
+        relative_frame_index = self._prepare_storage_for_frame(frame_index,
                                                                message.get_frame_size(),
                                                                message.get_frame_dtype())
 
-        self._logger.debug("Received frame '%d', writing as relative frame '%d'." % (message.get_frame_index(),
+        self._logger.debug("Received frame '%d', writing as relative frame '%d'." % (frame_index,
                                                                                      relative_frame_index))
 
         frame_data = message.get_data()
+        # Because the conversion to and from bytes is slow, mflow should be used in raw mode.
         bytes_to_write = frame_data if isinstance(frame_data, bytes) else frame_data.tobytes()
         self._dataset.id.write_direct_chunk((relative_frame_index, 0, 0), bytes_to_write)
 
         # Process additional plugins on the message.
         for plugin_function in self._plugins:
             plugin_function(self, message)
-
-        self._file.flush()
 
     def stop(self):
         self._logger.debug("Writer stopped.")

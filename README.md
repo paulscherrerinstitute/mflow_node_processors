@@ -88,8 +88,8 @@ Once you have installed the library, run the following commands, each in a separ
 ```bash
 # Start a proxy node:
 #   - name the node 'proxy'
-#   - listen on localhost port 40000
-#   - forward the stream to localhost port 40001
+#   - connect to localhost port 40000
+#   - bind the stream to localhost port 40001
 #   - start the web interface on port 8080
 m_proxy_node.py proxy tcp://127.0.0.1:40000 tcp://127.0.0.1:40001 --rest_port 8080
 ```
@@ -97,7 +97,7 @@ m_proxy_node.py proxy tcp://127.0.0.1:40000 tcp://127.0.0.1:40001 --rest_port 80
 ```bash
 # Start a compression node:
 #   - name the node 'compress'
-#   - listen on localhost port 40001
+#   - connect to localhost port 40001
 #   - forward the stream to localhost port 40002
 #   - start the web interface on port 8081
 m_compression_node.py compress tcp://127.0.0.1:40001 tcp://127.0.0.1:40002 --rest_port 8081
@@ -106,8 +106,8 @@ m_compression_node.py compress tcp://127.0.0.1:40001 tcp://127.0.0.1:40002 --res
 ```bash
 # Start a proxy node:
 #   - name the node 'proxy2'
-#   - listen on localhost port 40002
-#   - forward the stream to localhost port 40003
+#   - connect to localhost port 40002
+#   - bind the stream to localhost port 40003
 #   - start the web interface on port 8082
 #   - receive messages in raw format, because the stream is compressed, and it cannot
 #     be automatically reinterpreted as an array.
@@ -116,7 +116,7 @@ m_proxy_node.py proxy2 tcp://127.0.0.1:40002 tcp://127.0.0.1:40003 --rest_port 8
 ```bash
 # Start a writer node:
 #   - name the node 'write'
-#   - listen on localhost port 40003
+#   - connect to localhost port 40003
 #   - save the stream to file sample_output.h5
 #   - start the web interface on port 8083
 #   - receive message in raw format, because the stream is compressed, and it cannot
@@ -144,7 +144,7 @@ curl -X PUT 0.0.0.0:8082/api/v1/proxy2/
 curl -X PUT 0.0.0.0:8083/api/v1/write/
 
 # Generate the test stream:
-#   - Send the stream to tcp://127.0.0.1:40000, the first node in the chain.
+#   - Send the stream from tcp://127.0.0.1:40000, the first node in the chain.
 m_generate_test_stream.py tcp://127.0.0.1:40000
 
 # Stop the writer:

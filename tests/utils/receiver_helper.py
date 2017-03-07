@@ -8,13 +8,13 @@ default_output_file = "ignore_test_output.h5"
 default_dataset_name = "entry/dataset/data"
 
 
-def setup_receiver(processor, parameters=None, listening_address="tcp://127.0.0.1:40000"):
+def setup_receiver(processor, parameters=None, connection_address="tcp://127.0.0.1:40000"):
     """
     Setup and start the receiver with default values, mainly for testing purposes.
     To be used in the setUp test method.
     :param processor: Processor instance.
     :param parameters: Processor parameters. Defaults (dataset_name, output_file) provided.
-    :param listening_address: Listening address. Default "tcp://127.0.0.1:40000".
+    :param connection_address: Connection address. Default "tcp://127.0.0.1:40000".
     :return: instance of ExternalProcessorWrapper.
     """
 
@@ -24,7 +24,7 @@ def setup_receiver(processor, parameters=None, listening_address="tcp://127.0.0.
     process_parameters.update(parameters or {})
 
     receiver_node = ExternalProcessWrapper(get_zmq_listener(processor=processor,
-                                                            listening_address=listening_address),
+                                                            connection_address=connection_address),
                                            initial_parameters=process_parameters,
                                            processor_instance=processor)
     receiver_node.start()

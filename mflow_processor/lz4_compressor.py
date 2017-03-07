@@ -35,8 +35,8 @@ class LZ4CompressionProcessor(ProxyProcessor):
         if not self.block_size:
             error_message += "Parameter 'block_size' not set.\n"
 
-        if not self.forwarding_address:
-            error_message += "Parameter 'forwarding_address' not set.\n"
+        if not self.binding_address:
+            error_message += "Parameter 'binding_address' not set.\n"
 
         if error_message:
             self._logger.error(error_message)

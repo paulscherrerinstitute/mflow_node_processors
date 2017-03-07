@@ -3,9 +3,9 @@ from logging import getLogger
 import numpy as np
 
 # Initial size of the dataset (number of frames).
-DATASET_INITIAL_FRAME_COUNT = 100
+DATASET_INITIAL_FRAME_COUNT = 1000
 # Step for resizing the dataset.
-DATASET_FRAMES_INCREASE_STEP = 100
+DATASET_FRAMES_INCREASE_STEP = 1000
 
 _logger = getLogger(__name__)
 
@@ -114,6 +114,7 @@ def expand_dataset(dataset, received_frame_index, increase_step=DATASET_FRAMES_I
     :param dataset: Dataset to expand.
     :param received_frame_index: Last received frame index.
     :param increase_step: Optional. Default is 100.
+    :return new_dataset_size: Size of the new dataset.
     """
     new_dataset_size = received_frame_index + increase_step
 
@@ -121,6 +122,8 @@ def expand_dataset(dataset, received_frame_index, increase_step=DATASET_FRAMES_I
                   % (dataset.shape[0], received_frame_index, new_dataset_size))
 
     dataset.resize(size=new_dataset_size, axis=0)
+
+    return new_dataset_size
 
 
 def compact_dataset(dataset, max_frame_index):
