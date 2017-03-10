@@ -1,9 +1,9 @@
 package:
     name: mflow_node_processors
-    version: 0.0.1
+    version: 0.0.2
 
 build:
-  number: 3
+  number: 0
 
 source:
     path: ..
@@ -17,7 +17,7 @@ requirements:
         - hdf5 ==1.8.17
         - h5py >=2.7.*
         - bitshuffle ==0.2.4
-        - mflow_nodes >=0.0.3
+        - mflow_nodes >=0.0.4
 
 test:
   source_files:
