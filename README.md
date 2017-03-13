@@ -157,14 +157,175 @@ be self explanatory.
 When you no longer need the nodes terminate them by pressing **CTRL+C** in each terminal.
 
 ## Nodes documentation
-This chapter is not yet ready.
+This are the nodes that come with the mflow_node_processors module. To develop your own nodes, you can see 
+the implementations of the following ones for reference. They should cover most of basic scenarios. The 
+nodes provided below are more of less general purpose and with some configuration can be adopet for many uses.
 
 ### Proxy node
+class: **mflow\_nodes.processors.proxy.ProxyProcessor**
+
+The proxy node allows for some processing to be done on the live stream, and than forward the stream to the next 
+node without modifying it. The only was the proxy node can manipulate the stream is to decide with messages 
+will continue to the next node (it is useful for online stream analysis and message filtering).
+
+```bash
+usage: m_proxy_node.py [-h] [--rest_port REST_PORT] [--raw]
+                       instance_name connect_address binding_address
+
+positional arguments:
+  instance_name         Name of the node instance. Should be unique.
+  connect_address       Connect address for mflow. Example:
+                        tcp://127.0.0.1:40000
+  binding_address       Binding address for mflow forwarding. Example:
+                        tcp://127.0.0.1:40001
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --rest_port REST_PORT
+                        Port for web interface.
+  --raw                 Receive the mflow messages in raw mode.
+
+```
+
+#### Parameters
+
+- **binding\_address**: Address to bind the forwarded stream to.
 
 ### Compression node
+class: **mflow_processor.lz4_\compressor.LZ4CompressionProcessor**
+
+The compression node takes an mflow stream, it compresses it with LZ4 Bitshuffle and forwards it to the next node.
+
+```bash
+usage: m_compression_node.py [-h] [--rest_port REST_PORT]
+                             [--block_size BLOCK_SIZE]
+                             instance_name connect_address binding_address
+
+positional arguments:
+  instance_name         Name of the node instance. Should be unique.
+  connect_address       Connect address for mflow. Example:
+                        tcp://127.0.0.1:40000
+  binding_address       Binding address for mflow forwarding. Example:
+                        tcp://127.0.0.1:40001
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --rest_port REST_PORT
+                        Port for web interface.
+  --block_size BLOCK_SIZE
+                        LZ4 block size.
+```
+
+#### Parameters
+
+- **binding\_address**: Address to bind the forwarded stream to.
+- **block\_size**: Size of the block for LZ4 Bitshuffle compression (Default: 2048)
 
 ### Write node
+class: **mflow_processor.h5_chunked_writer.HDF5ChunkedWriterProcessor**
+
+The write node can write the provided stream to a H5 file. It can write all images in a single file, or use 
+file roll over on a defined number of frames (for example 100 frames / file).
+
+```bash
+usage: m_write_node.py [-h] [--output_file OUTPUT_FILE]
+                       [--rest_port REST_PORT] [--raw] [--compression {lz4}]
+                       instance_name connect_address
+
+positional arguments:
+  instance_name         Name of the node instance. Should be unique.
+  connect_address       Connect address for mflow. Example:
+                        tcp://127.0.0.1:40000
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --output_file OUTPUT_FILE
+                        Name of output h5 file to write.
+  --rest_port REST_PORT
+                        Port for web interface.
+  --raw                 Receive the mflow messages in raw mode.
+  --compression {lz4}   Incoming stream compression.
+```
+
+#### Parameters
+
+- **output\_file**: Path to the output file to write. It can be a string template, but only if _frames\_per\_file_ 
+is set.
+- **dataset\_name**: Name of the dataset to write the data to.
+- **frames\_per\_file**: Number of frames to write to a file. After the number has been reached, a new file is created. 
+Use _None_ or _0_ to disable file roll over (Default: None).
+- **compression**: H5 compression plugin value.
+- **compression\_opts**: Compression options to pass to H5 library.
+- **h5\_group\_attributes**: Attributes to set to H5 groups (used mainly for NXMX compliance).
+- **h5\_dataset\_attributes**: Attributes to set to h5 datasets (used mainly for NXMX compliance).
+- **h5\_datasets**: Additional datasets (apart from the data one) to set in the output H5 file.
 
 ### Write Jungfrau node
+class: **mflow_processor.h5_chunked_writer.HDF5ChunkedWriterProcessor**
 
+This node is a special case of the standard writer. In addition to the standard dataset written by the default writer, 
+it provides an additional dataset with all the frame indexes. This is done via the plugin capability of the writer.
+
+```bash
+usage: m_write_jungfrau_node.py [-h] [--output_file OUTPUT_FILE]
+                                [--rest_port REST_PORT]
+                                [--frame_index_dataset FRAME_INDEX_DATASET]
+                                instance_name connect_address
+
+positional arguments:
+  instance_name         Name of the node instance. Should be unique.
+  connect_address       Connect address for mflow. Example:
+                        tcp://127.0.0.1:40000
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --output_file OUTPUT_FILE
+                        Name of output h5 file to write.
+  --rest_port REST_PORT
+                        Port for web interface.
+  --frame_index_dataset FRAME_INDEX_DATASET
+                        Name of the dataset to store the frame indexes into.
+```
+
+#### Parameters
+Since it uses the same class, see **Write node** documentation for details.
+ 
 ### NXMX node
+class: **mflow_processor.h5_nxmx_writer.HDF5nxmxWriter**
+
+The NXMX node is basically a proxy node, that prepares the NXMX standard master file, while passing the stream on 
+for a writer node to write the data files.
+
+```bash
+usage: m_nxmx_node.py [-h] [--config_file CONFIG_FILE] [--rest_port REST_PORT]
+                      instance_name connect_address binding_address
+                      writer_control_address
+
+positional arguments:
+  instance_name         Name of the node instance. Should be unique.
+  connect_address       Connect address for mflow. Example:
+                        tcp://127.0.0.1:40000
+  binding_address       Binding address for mflow forwarding. Example:
+                        tcp://127.0.0.1:40001
+  writer_control_address
+                        URL of the H5 writer node REST Api. Example:
+                        http://127.0.0.1:41001
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --config_file CONFIG_FILE
+                        Config file with the detector properties.
+  --rest_port REST_PORT
+                        Port for web interface.
+```
+
+#### Parameters
+- **filename**: Path to the output master file to write. It must be in standard NXMX format: 
+**<experiment_name>\_master.h5**
+- **frames\_per\_file**: Number of frames to write to a data file.
+- **h5\_group\_attributes**: Attributes to set to H5 groups.
+- **h5\_dataset\_attributes**: Attributes to set to h5 datasets.
+- **h5\_datasets**: Additional datasets (apart from the data one) to set in the output H5 file.
+
+The H5 datasets are extrapolated from the stream produced by the detector, the H5 group and dataset 
+attributes are passed as part of the config (--config_file argument).
