@@ -3,19 +3,19 @@ import unittest
 from time import sleep
 
 import h5py
-from mflow_nodes.test_tools.m_generate_test_stream import generate_test_array_stream, generate_frame_data
 
+from mflow_nodes.test_tools.m_generate_test_stream import generate_test_array_stream, generate_frame_data
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
-from tests.utils.receiver_helper import setup_receiver, cleanup_receiver, default_output_file, default_dataset_name, \
+from tests.helpers import setup_writer, cleanup_writer, default_output_file, default_dataset_name, \
     default_number_of_frames, default_frame_shape
 
 
 class TransferTest(unittest.TestCase):
     def setUp(self):
-        self.receiver_node = setup_receiver(processor=HDF5ChunkedWriterProcessor())
+        self.receiver_node = setup_writer(processor=HDF5ChunkedWriterProcessor())
 
     def tearDown(self):
-        cleanup_receiver(self.receiver_node)
+        cleanup_writer(self.receiver_node)
 
     def test_transfer(self):
         """
@@ -37,7 +37,12 @@ class TransferTest(unittest.TestCase):
         # Count the total number of received frames.
         self.assertEqual(statistics["total_frames"], default_number_of_frames, "Not all frames were transferred.")
 
+        # Wait for the stream to complete transfer.
+        sleep(0.5)
+
         self.receiver_node.stop()
+        # Wait for the file to be written.
+        sleep(0.5)
 
         # Check if the output file was written.
         self.assertTrue(os.path.exists(default_output_file), "Output file does not exist.")

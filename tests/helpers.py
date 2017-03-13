@@ -9,7 +9,7 @@ default_output_file = "ignore_test_output.h5"
 default_dataset_name = "entry/dataset/data"
 
 
-def setup_receiver(processor, parameters=None, connect_address="tcp://127.0.0.1:40000"):
+def setup_writer(processor, parameters=None, connect_address="tcp://127.0.0.1:40000"):
     """
     Setup and start the receiver with default values, mainly for testing purposes.
     To be used in the setUp test method.
@@ -25,7 +25,8 @@ def setup_receiver(processor, parameters=None, connect_address="tcp://127.0.0.1:
     process_parameters.update(parameters or {})
 
     receiver_node = ExternalProcessWrapper(processor_function=get_processor_function(processor=processor),
-                                           receiver_function=get_receiver_function(connection_address=connect_address),
+                                           receiver_function=get_receiver_function(connection_address=connect_address,
+                                                                                   receive_raw=True),
                                            initial_parameters=process_parameters,
                                            processor_instance=processor)
 
@@ -34,7 +35,7 @@ def setup_receiver(processor, parameters=None, connect_address="tcp://127.0.0.1:
     return receiver_node
 
 
-def cleanup_receiver(receiver_node, files_to_cleanup=None):
+def cleanup_writer(receiver_node, files_to_cleanup=None):
     """
     Stop the receiver and delete the temporary files.
     To be used in the tearDown test method.

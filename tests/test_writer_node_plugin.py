@@ -3,11 +3,11 @@ from time import sleep
 
 import h5py
 import numpy as np
-from mflow_nodes.test_tools.m_generate_test_stream import generate_test_array_stream
 
+from mflow_nodes.test_tools.m_generate_test_stream import generate_test_array_stream
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
 from mflow_processor.utils import writer_plugins
-from tests.utils.receiver_helper import setup_receiver, cleanup_receiver, default_frame_shape, \
+from tests.helpers import setup_writer, cleanup_writer, default_frame_shape, \
     default_number_of_frames, default_output_file
 
 frame_index_dataset_name = "group1/group2/dataset"
@@ -16,10 +16,10 @@ frame_index_dataset_name = "group1/group2/dataset"
 class PluginTransferTest(unittest.TestCase):
     def setUp(self):
         plugins = [writer_plugins.write_frame_index_to_dataset(frame_index_dataset_name)]
-        self.receiver_node = setup_receiver(processor=HDF5ChunkedWriterProcessor(plugins=plugins))
+        self.receiver_node = setup_writer(processor=HDF5ChunkedWriterProcessor(plugins=plugins))
 
     def tearDown(self):
-        cleanup_receiver(self.receiver_node)
+        cleanup_writer(self.receiver_node)
 
     def test_plugin(self):
         """
@@ -27,10 +27,13 @@ class PluginTransferTest(unittest.TestCase):
         """
         # Transfer the data and wait a bit for the writer to finish.
         generate_test_array_stream(frame_shape=default_frame_shape, number_of_frames=default_number_of_frames)
+
+        # Wait for the stream to complete transfer.
         sleep(0.5)
 
-        # Stop the receiver to complete the writing of the file to disk.
         self.receiver_node.stop()
+        # Wait for the file to be written.
+        sleep(0.5)
 
         file = h5py.File(default_output_file, 'r')
         frame_index_dataset = file[frame_index_dataset_name]
