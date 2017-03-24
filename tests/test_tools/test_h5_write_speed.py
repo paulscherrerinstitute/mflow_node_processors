@@ -17,11 +17,15 @@ def test_h5_write_speed(output_file, frame_size, n_frames, sampling_interval):
 
     # Constructed message will be the same for each frame - do not waste CPU time on this.
     frame_shape = [frame_size, frame_size]
-    message_data = {'header': {"htype": "array-1.0",
+    frame_data = generate_frame_data(frame_shape, 0).tobytes()
+    message_data = {'header': {"htype": "raw-1.0",
                                "type": "int32",
                                "shape": frame_shape},
-                    'data': [generate_frame_data(frame_shape, 0)]}
+                    'data': [frame_data]}
     message = get_mflow_message(mflow.Message(receiver_statistics, message_data))
+
+    # We have only 1 data block, and we can specify it explicitly to avoid performance overhead.
+    message.get_data = lambda: frame_data
 
     # Writer statistics.
     statistics = StreamStatisticsPrinter(sampling_interval)
@@ -31,7 +35,7 @@ def test_h5_write_speed(output_file, frame_size, n_frames, sampling_interval):
             # Set data for current frame.
             message_data["header"]["frame"] = i
             receiver_statistics.messages_received += 1
-            receiver_statistics.total_bytes_received += message.get_data_length()
+            receiver_statistics.total_bytes_received += len(frame_data)
 
             # Write data to disk.
             writer.process_message(message)
