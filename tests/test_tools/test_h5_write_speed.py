@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 
 from mflow import mflow
-from mflow.tools import StreamStatisticsPrinter
+from mflow.tools import ThroughputStatisticsPrinter
 
 from mflow_nodes.stream_tools.mflow_message import get_mflow_message
 from mflow_nodes.test_tools.m_generate_test_stream import generate_frame_data
@@ -28,7 +28,7 @@ def test_h5_write_speed(output_file, frame_size, n_frames, sampling_interval):
     message.get_data = lambda: frame_data
 
     # Writer statistics.
-    statistics = StreamStatisticsPrinter(sampling_interval)
+    statistics = ThroughputStatisticsPrinter(sampling_interval)
 
     try:
         for i in range(n_frames):
@@ -41,7 +41,7 @@ def test_h5_write_speed(output_file, frame_size, n_frames, sampling_interval):
             writer.process_message(message)
 
             # Process the statistics.
-            statistics.process_statistics(receiver_statistics)
+            statistics.save_statistics(receiver_statistics)
 
     except KeyboardInterrupt:
         print("Terminated by user.")
