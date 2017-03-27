@@ -23,26 +23,17 @@ class TransferTest(unittest.TestCase):
         """
         generate_test_array_stream(frame_shape=default_frame_shape, number_of_frames=default_number_of_frames)
 
-        counter = 0
-        # Statistics is stored in a shared namespace. It might take some time for synchronization.
-        statistics = None
-        while not statistics:
-            statistics = self.receiver_node.get_statistics()
-            sleep(0.1)
-            counter += 1
-            # ..but not more than 2 seconds..
-            if counter > 20:
-                raise Exception("Could not retrieve statistics in 2 seconds.")
-
-        # Count the total number of received frames.
-        self.assertEqual(statistics["total_frames"], default_number_of_frames, "Not all frames were transferred.")
-
         # Wait for the stream to complete transfer.
         sleep(0.5)
-
         self.receiver_node.stop()
-        # Wait for the file to be written.
+        # Wait for file to be written to disk.
         sleep(0.5)
+
+        # Collect statistics.
+        statistics = self.receiver_node.get_statistics()
+
+        # Count the total number of received frames.
+        self.assertEqual(statistics["messages_received"], default_number_of_frames, "Not all frames were transferred.")
 
         # Check if the output file was written.
         self.assertTrue(os.path.exists(default_output_file), "Output file does not exist.")
