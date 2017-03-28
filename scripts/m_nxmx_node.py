@@ -9,6 +9,7 @@ from mflow_processor.h5_nxmx_writer import HDF5nxmxWriter
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logging.getLogger("mflow.mflow").setLevel(logging.ERROR)
 logging.getLogger("requests").setLevel(logging.ERROR)
+logging.getLogger("ThroughputStatistics").setLevel(logging.ERROR)
 
 parser = ArgumentParser()
 parser.add_argument("instance_name", type=str, help="Name of the node instance. Should be unique.")

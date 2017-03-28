@@ -6,8 +6,9 @@ from bitshuffle.h5 import H5_COMPRESS_LZ4
 from mflow_nodes.stream_node import start_stream_node
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
 
-logging.basicConfig(stream=sys.stdout, level=logging.ERROR)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logging.getLogger("mflow.mflow").setLevel(logging.ERROR)
+logging.getLogger("ThroughputStatistics").setLevel(logging.ERROR)
 
 parser = ArgumentParser()
 parser.add_argument("instance_name", type=str, help="Name of the node instance. Should be unique.")
