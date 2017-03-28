@@ -1,7 +1,7 @@
 import os
 
 from mflow_nodes.stream_node import get_processor_function, get_receiver_function
-from mflow_nodes.node_manager import ExternalProcessWrapper
+from mflow_nodes.node_manager import NodeManager
 
 default_frame_shape = (4, 4)
 default_number_of_frames = 16
@@ -24,11 +24,11 @@ def setup_writer(processor, parameters=None, connect_address="tcp://127.0.0.1:40
                           "output_file": default_output_file}
     process_parameters.update(parameters or {})
 
-    receiver_node = ExternalProcessWrapper(processor_function=get_processor_function(processor=processor),
-                                           receiver_function=get_receiver_function(connection_address=connect_address,
+    receiver_node = NodeManager(processor_function=get_processor_function(processor=processor),
+                                receiver_function=get_receiver_function(connection_address=connect_address,
                                                                                    receive_raw=True),
-                                           initial_parameters=process_parameters,
-                                           processor_instance=processor)
+                                initial_parameters=process_parameters,
+                                processor_instance=processor)
 
     receiver_node.start()
 

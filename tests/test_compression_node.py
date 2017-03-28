@@ -5,7 +5,7 @@ from time import sleep
 import h5py
 from bitshuffle.h5 import H5_COMPRESS_LZ4, H5FILTER
 
-from mflow_nodes.node_manager import ExternalProcessWrapper
+from mflow_nodes.node_manager import NodeManager
 from mflow_nodes.stream_node import get_processor_function, get_receiver_function
 from mflow_nodes.test_tools.m_generate_test_stream import generate_test_array_stream, generate_frame_data
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
@@ -26,7 +26,7 @@ class CompressionTest(unittest.TestCase):
 
         # Start the compressor.s
         compressor_procesor = LZ4CompressionProcessor()
-        self.compression_node = ExternalProcessWrapper(
+        self.compression_node = NodeManager(
             processor_function=get_processor_function(LZ4CompressionProcessor()),
             receiver_function=get_receiver_function(connection_address=STREAM_CONNECT_ADDRESS),
             processor_instance=compressor_procesor,
