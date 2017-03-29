@@ -97,30 +97,31 @@ class HDF5nxmxWriter(BaseProcessor):
 
     def stop(self):
         # Stop the writer.
-        self._h5_writer_client.rest_client.stop()
+        self._h5_writer_client.stop()
 
-        # Link the generated output files.
-        files_to_link = glob.glob("%s*.h5" % self._data_filename_format[0:self._data_filename_format.rindex("{")])
-        create_external_data_files_links(self._file, files_to_link)
+        # Process the received data only if some images were received.
+        if self._image_count > 0:
+            if not self._header_data:
+                raise ValueError("Did not receive header frame. Cannot write H5 file.")
 
-        # Process the received header data.
-        if not self._header_data:
-            raise ValueError("Did not receive header frame. Cannot write H5 file.")
+            # Link the generated output files.
+            files_to_link = glob.glob("%s*.h5" % self._data_filename_format[0:self._data_filename_format.rindex("{")])
+            create_external_data_files_links(self._file, files_to_link)
 
-        self._logger.debug("Processing header message attributes.")
-        self.h5_datasets.update(convert_header_to_dataset_values(self._header_data,
-                                                                 self._image_count))
+            self._logger.debug("Processing header message attributes.")
+            self.h5_datasets.update(convert_header_to_dataset_values(self._header_data,
+                                                                     self._image_count))
 
-        # Check if the number of received frames is the same as the number of advertised frames.
-        number_of_frames_from_header = self.h5_datasets[NUMBER_OF_FRAMES_FROM_HEADER]
-        if self._image_count != number_of_frames_from_header:
-            self._logger.warning("The number of frames in the header (%d) does not match the number of received (%d) "
-                                 "frames. Fixing the header data." % (number_of_frames_from_header, self._image_count))
-            self.h5_datasets[NUMBER_OF_FRAMES_FROM_HEADER] = self._image_count
+            # Check if the number of received frames is the same as the number of advertised frames.
+            number_of_frames_from_header = self.h5_datasets[NUMBER_OF_FRAMES_FROM_HEADER]
+            if self._image_count != number_of_frames_from_header:
+                self._logger.warning("The number of frames in the header (%d) does not match the number of received (%d) "
+                                     "frames. Fixing the header data." % (number_of_frames_from_header, self._image_count))
+                self.h5_datasets[NUMBER_OF_FRAMES_FROM_HEADER] = self._image_count
 
-        # Set the dataset and attributes in the h5 master file.
-        populate_h5_file(self._file, self.h5_group_attributes, self.h5_datasets,
-                         self.h5_dataset_attributes, dataset_types)
+            # Set the dataset and attributes in the h5 master file.
+            populate_h5_file(self._file, self.h5_group_attributes, self.h5_datasets,
+                             self.h5_dataset_attributes, dataset_types)
 
         self._zmq_forwarder.stop()
         self._file.close()
