@@ -298,18 +298,20 @@ for a writer node to write the data files.
 
 ```bash
 usage: m_nxmx_node.py [-h] [--config_file CONFIG_FILE] [--rest_port REST_PORT]
-                      instance_name connect_address binding_address
-                      writer_control_address
+                      instance_name connect_address writer_binding_address
+                      writer_control_address writer_instance_name
 
 positional arguments:
   instance_name         Name of the node instance. Should be unique.
   connect_address       Connect address for mflow. Example:
                         tcp://127.0.0.1:40000
-  binding_address       Binding address for mflow forwarding. Example:
+  writer_binding_address
+                        Binding address for mflow forwarding. Example:
                         tcp://127.0.0.1:40001
   writer_control_address
                         URL of the H5 writer node REST Api. Example:
                         http://127.0.0.1:41001
+  writer_instance_name  Name of the writer instance name.
 
 optional arguments:
   -h, --help            show this help message and exit

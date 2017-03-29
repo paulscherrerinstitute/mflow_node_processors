@@ -15,7 +15,7 @@ parser.add_argument("connect_address", type=str, help="Connect address for mflow
                                                       "Example: tcp://127.0.0.1:40000")
 parser.add_argument("binding_address", type=str, help="Binding address for mflow forwarding.\n"
                                                       "Example: tcp://127.0.0.1:40001")
-parser.add_argument("--rest_port", type=int, default=8080, help="Port for web interface.")
+parser.add_argument("--rest_port", type=int, default=41000, help="Port for web interface.")
 parser.add_argument("--raw", action='store_true', help="Receive the mflow messages in raw mode.")
 input_args = parser.parse_args()
 

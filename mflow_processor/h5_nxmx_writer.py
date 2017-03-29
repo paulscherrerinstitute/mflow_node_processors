@@ -3,8 +3,8 @@ import os
 from logging import getLogger
 import h5py
 
+from mflow_nodes.rest_api.rest_client import NodeClient
 from mflow_nodes.processors.base import BaseProcessor
-from mflow_nodes.rest_api import rest_client
 from mflow_nodes.stream_tools.mflow_forwarder import MFlowForwarder
 
 from mflow_processor.utils.h5_utils import populate_h5_file
@@ -27,13 +27,16 @@ class HDF5nxmxWriter(BaseProcessor):
     """
     _logger = getLogger(__name__)
 
-    def __init__(self, h5_writer_stream_address, h5_writer_control_address, name="H5 NXMX master writer"):
+    def __init__(self, h5_writer_stream_address, h5_writer_control_address, h5_writer_instance_name,
+                 name="H5 NXMX master writer"):
         """
         Initialize the NXMX writer.
         :param h5_writer_stream_address: H5 writer stream address to forward the stream to.
         :param h5_writer_control_address: H5 writer control address to control the writer.
-        :param name: Name of the writer.
+        :param h5_writer_instance_name: H5 writer instance name.
+        :param name: Name of the NXMX writer node.
         """
+
         self.__name__ = name
         self._file = None
         self._is_running = False
@@ -41,8 +44,8 @@ class HDF5nxmxWriter(BaseProcessor):
         self._zmq_forwarder = None
         self._image_count = 0
         self._header_data = None
+        self._h5_writer_client = NodeClient(h5_writer_control_address, h5_writer_instance_name)
         self._h5_writer_stream_address = h5_writer_stream_address
-        self._h5_writer_control_address = h5_writer_control_address
 
         # Parameters that need to be set.
         self.filename = None
@@ -84,8 +87,8 @@ class HDF5nxmxWriter(BaseProcessor):
                                 "h5_group_attributes": {"/entry:NX_class": "NXentry",
                                                         "/entry/data:NX_class": "NXdata"}}
 
-        rest_client.set_parameters(self._h5_writer_control_address, h5_writer_parameters)
-        rest_client.start(self._h5_writer_control_address)
+        self._h5_writer_client.set_parameters(h5_writer_parameters)
+        self._h5_writer_client.start()
 
         # Create a master file.
         self._file = h5py.File(master_filename, "w")
@@ -94,7 +97,7 @@ class HDF5nxmxWriter(BaseProcessor):
 
     def stop(self):
         # Stop the writer.
-        rest_client.stop(self._h5_writer_control_address)
+        self._h5_writer_client.rest_client.stop()
 
         # Link the generated output files.
         files_to_link = glob.glob("%s*.h5" % self._data_filename_format[0:self._data_filename_format.rindex("{")])
