@@ -27,11 +27,10 @@ class HDF5nxmxWriter(BaseProcessor):
     """
     _logger = getLogger(__name__)
 
-    def __init__(self, h5_writer_stream_address, h5_writer_control_address, h5_writer_instance_name,
+    def __init__(self, h5_writer_control_address, h5_writer_instance_name,
                  name="H5 NXMX master writer"):
         """
         Initialize the NXMX writer.
-        :param h5_writer_stream_address: H5 writer stream address to forward the stream to.
         :param h5_writer_control_address: H5 writer control address to control the writer.
         :param h5_writer_instance_name: H5 writer instance name.
         :param name: Name of the NXMX writer node.
@@ -45,10 +44,10 @@ class HDF5nxmxWriter(BaseProcessor):
         self._image_count = 0
         self._header_data = None
         self._h5_writer_client = NodeClient(h5_writer_control_address, h5_writer_instance_name)
-        self._h5_writer_stream_address = h5_writer_stream_address
 
         # Parameters that need to be set.
         self.filename = None
+        self.binding_address = None
 
         # Parameters with default values.
         self.frames_per_file = 100
@@ -71,7 +70,7 @@ class HDF5nxmxWriter(BaseProcessor):
 
         # Start the forwarder.
         self._zmq_forwarder = MFlowForwarder()
-        self._zmq_forwarder.start(self._h5_writer_stream_address)
+        self._zmq_forwarder.start(self.binding_address)
 
         # Extract the experiment id and output folder from the master file name.
         master_filename = os.path.abspath(os.path.expanduser(self.filename))
