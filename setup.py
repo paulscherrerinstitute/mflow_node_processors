@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='mflow_node_processors',
-    version="0.0.1",
+    version="0.0.3",
     description="mflow stream node processors",
     author='Paul Scherrer Institute',
     author_email='andrej.babic@psi.ch',
@@ -16,7 +16,8 @@ setup(
              "scripts/m_nxmx_node.py"],
 
     packages=['mflow_processor',
-              'mflow_processor.utils'],
+              'mflow_processor.utils',
+              'mflow_processor.scripts'],
 
     include_package_data=True
 )

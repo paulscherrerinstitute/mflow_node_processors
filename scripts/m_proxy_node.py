@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 
 from mflow_nodes.processors.proxy import ProxyProcessor
-from mflow_nodes.script_tools import setup_console_logging, add_default_arguments, start_stream_node_helper
+from mflow_nodes.script_tools.helpers import setup_console_logging, add_default_arguments, start_stream_node_helper
 
 
 def run(input_args, parameters=None):

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from mflow_nodes.script_tools import add_default_arguments, setup_console_logging, start_stream_node_helper
+from mflow_nodes.script_tools.helpers import add_default_arguments, setup_console_logging, start_stream_node_helper
 from mflow_processor.lz4_compressor import LZ4CompressionProcessor
 
 

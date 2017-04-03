@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 
 from bitshuffle.h5 import H5_COMPRESS_LZ4
 
-from mflow_nodes.script_tools import start_stream_node_helper, setup_console_logging, add_default_arguments
+from mflow_nodes.script_tools.helpers import start_stream_node_helper, setup_console_logging, add_default_arguments
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
 from mflow_processor.utils import writer_plugins
 
