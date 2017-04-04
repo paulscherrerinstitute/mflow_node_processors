@@ -15,6 +15,8 @@ setup(
              "scripts/m_compression_node.py",
              "scripts/m_nxmx_node.py"],
 
+    package_dir={"mflow_processor.scripts": 'scripts'},
+
     packages=['mflow_processor',
               'mflow_processor.utils',
               'mflow_processor.scripts'],
