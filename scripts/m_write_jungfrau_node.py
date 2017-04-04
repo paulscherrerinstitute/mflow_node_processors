@@ -16,11 +16,11 @@ compression_data = {
 def run(input_args, parameters=None):
     parameters = parameters or {}
 
-    if input_args.compression:
+    if "compression" in input_args and input_args.compression:
         compression_arguments = compression_data.get(input_args.compression, {})
         parameters.update(compression_arguments)
 
-    if input_args.output_file:
+    if "output_file" in input_args and input_args.output_file:
         parameters["output_file"] = input_args.output_file
 
     plugins = [writer_plugins.write_frame_index_to_dataset(input_args.frame_index_dataset)]

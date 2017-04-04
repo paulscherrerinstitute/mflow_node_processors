@@ -7,7 +7,7 @@ cython=0.25.2=py35_0
 h5py=2.7.0alpha=py35_0
 hdf5=1.8.17=1
 mflow=0.0.17=py35_3
-mflow_nodes=0.0.5=py35_0
+mflow_nodes=0.0.5=py35_1
 mkl=2017.0.1=0
 numpy=1.12.0=py35_0
 openssl=1.0.2k=0
