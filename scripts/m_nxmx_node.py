@@ -1,4 +1,3 @@
-import logging
 from argparse import ArgumentParser
 
 from mflow_nodes.script_tools.helpers import add_default_arguments, setup_console_logging, start_stream_node_helper
@@ -13,7 +12,6 @@ def run(input_args, parameters=None):
 
 if __name__ == "__main__":
     setup_console_logging()
-    logging.getLogger("requests").setLevel(logging.ERROR)
 
     parser = ArgumentParser()
     add_default_arguments(parser, binding_argument=True)
