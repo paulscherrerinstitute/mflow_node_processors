@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from bitshuffle.h5 import H5_COMPRESS_LZ4
 
-from mflow_nodes.script_tools.helpers import setup_console_logging, add_default_arguments, start_stream_node_helper
+from mflow_nodes.script_tools.helpers import setup_logging, add_default_arguments, start_stream_node_helper
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
 
 compression_data = {
@@ -24,11 +24,12 @@ def run(input_args, parameters=None):
 
 
 if __name__ == "__main__":
-    setup_console_logging()
-
     parser = ArgumentParser()
     add_default_arguments(parser)
     parser.add_argument("--output_file", type=str, help="Name of output h5 file to write.")
     parser.add_argument("--compression", default=None, choices=['lz4'], help="Incoming stream compression.")
+    arguments = parser.parse_args()
 
-    run(parser.parse_args())
+    setup_logging(arguments.log_config_file)
+
+    run(arguments)
