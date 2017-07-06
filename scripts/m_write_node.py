@@ -30,6 +30,6 @@ if __name__ == "__main__":
     parser.add_argument("--compression", default=None, choices=['lz4'], help="Incoming stream compression.")
     arguments = parser.parse_args()
 
-    setup_logging(arguments.log_config_file)
+    setup_logging(arguments.log_level)
 
     run(arguments)
