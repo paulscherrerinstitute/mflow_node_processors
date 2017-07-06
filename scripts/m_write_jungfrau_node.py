@@ -33,10 +33,11 @@ if __name__ == "__main__":
     add_default_arguments(parser)
     parser.add_argument("--output_file", type=str, help="Name of output h5 file to write.")
     parser.add_argument("--compression", default=None, choices=['lz4'], help="Incoming stream compression.")
+    parser.add_argument("--dataset", type=str, default="data", help="Name of the dataset tot store the frames into.")
     parser.add_argument("--frame_index_dataset", type=str, default="frame_index", help="Name of the dataset to store "
                                                                                        "the frame indexes into.")
     arguments = parser.parse_args()
 
     setup_logging(arguments.log_level)
 
-    run(arguments)
+    run(arguments, parameters={"dataset_name": arguments.dataset})
