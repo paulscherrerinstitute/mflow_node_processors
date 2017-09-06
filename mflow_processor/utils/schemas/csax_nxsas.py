@@ -201,7 +201,8 @@ csax_nxsas_schema = {
         "/entry/instrument/beam_stop_1/status:NX_class": "NX_CHAR",
 
         "/entry/instrument/beam_stop_2/description:NX_class": "NX_CHAR",
-        "/entry/instrument/beam_stop_2/size:NX_class": "NX_FLOAT",
+        "/entry/instrument/beam_stop_2/size_x:NX_class": "NX_FLOAT",
+        "/entry/instrument/beam_stop_2/size_y:NX_class": "NX_FLOAT",
         "/entry/instrument/beam_stop_2/x:NX_class": "NX_FLOAT",
         "/entry/instrument/beam_stop_2/y:NX_class": "NX_FLOAT",
         "/entry/instrument/beam_stop_2/distance_to_detector:NX_class": "NX_FLOAT",
@@ -288,7 +289,8 @@ csax_nxsas_schema = {
         "/entry/instrument/beam_stop_1/y:NX_LENGTH": "mm",
         "/entry/instrument/beam_stop_1/distance_to_detector:NX_LENGTH": "mm",
 
-        "/entry/instrument/beam_stop_2/size:NX_LENGTH": "mm",
+        "/entry/instrument/beam_stop_2/size_x:NX_LENGTH": "mm",
+        "/entry/instrument/beam_stop_2/size_y:NX_LENGTH": "mm",
         "/entry/instrument/beam_stop_2/x:NX_LENGTH": "mm",
         "/entry/instrument/beam_stop_2/y:NX_LENGTH": "mm",
         "/entry/instrument/beam_stop_2/distance_to_detector:NX_LENGTH": "mm",
@@ -341,7 +343,7 @@ csax_nxsas_values = {
         "/entry/instrument/XBPM4/group_index": 2,
         "/entry/instrument/XBPM4/group_parent": [-1, 1, 1, 1, 1],
 
-        "/entry/instrument/XBPM4/XBPM4/distance": None,
+        "/entry/instrument/XBPM4/XBPM4/distance": float('nan'),
         "/entry/instrument/XBPM4/XBPM4/description": "Four quadrant x-ray beam position monitor",
         "/entry/instrument/XBPM4/XBPM4/type": "???",
         "/entry/instrument/XBPM4/XBPM4/calibration_date": "???",
@@ -363,7 +365,7 @@ csax_nxsas_values = {
         "/entry/instrument/XBPM5/group_index": 3,
         "/entry/instrument/XBPM5/group_parent": [-1, 1, 1, 1, 1],
 
-        "/entry/instrument/XBPM5/XBPM5/distance": None,
+        "/entry/instrument/XBPM5/XBPM5/distance": float('nan'),
         "/entry/instrument/XBPM5/XBPM5/description": "Four quadrant x-ray beam position monitor",
         "/entry/instrument/XBPM5/XBPM5/type": "???",
         "/entry/instrument/XBPM5/XBPM5/calibration_date": "???",
@@ -381,7 +383,7 @@ csax_nxsas_values = {
         "/entry/instrument/XBPM6/group_index": 4,
         "/entry/instrument/XBPM6/group_parent": [-1, 1, 1, 1, 1],
 
-        "/entry/instrument/XBPM6/XBPM6/distance": None,
+        "/entry/instrument/XBPM6/XBPM6/distance": float('nan'),
         "/entry/instrument/XBPM6/XBPM6/description": "Four quadrant x-ray beam position monitor",
         "/entry/instrument/XBPM6/XBPM6/type": "???",
         "/entry/instrument/XBPM6/XBPM6/calibration_date": "???",
@@ -399,10 +401,11 @@ csax_nxsas_values = {
                                                     "filter positions. Additionally each one allows for an out "
                                                     "position to allow no filtering.",
 
+        "/entry/instrument/slit_4/material": "Si",
+        "/entry/instrument/slit_4/description": "Slit 4, experimental hutch, exposure box",
+
         "/entry/instrument/beam_stop_1/description": "circular",
         "/entry/instrument/beam_stop_1/size": 3.0,
-        "/entry/instrument/beam_stop_1/y:NX_LENGTH": "mm",
-        "/entry/instrument/beam_stop_1/distance_to_detector:NX_LENGTH": "mm",
 
         "/entry/instrument/beam_stop_2/description": "rectangular",
         "/entry/instrument/beam_stop_2/size_x": 5.00,
@@ -415,8 +418,8 @@ csax_nxsas_values = {
     },
 
     "h5_dataset_direct_input_values": {
-        "scan": "/entry/scan",
-        "date": "/entry/date",
+        "date": "/entry/start_time",
+        "scan": "/entry/title",
         "curr": "/entry/instrument/source/current",
         "idgap": "/entry/instrument/insertion_device/gap",
         "harmonic": "/entry/instrument/insertion_device/harmonic",
@@ -455,9 +458,9 @@ csax_nxsas_values = {
         "sl2wv": "/entry/instrument/slit_2/y_gap",
         "sl2ch": "/entry/instrument/slit_2/x_translation",
         "sl2cv": "/entry/instrument/slit_2/height",
-        "bpm6_gain_setting": "/entry/instrument/XBPM5/XBPM5/gain_setting",
-        "bpm6s": "/entry/instrument/XBPM5/XBPM5_sum/data",
-        "bpm6_saturation_value": "/entry/instrument/XBPM5/XBPM5_sum/saturation_value",
+        "bpm6_gain_setting": "/entry/instrument/XBPM6/XBPM6/gain_setting",
+        "bpm6s": "/entry/instrument/XBPM6/XBPM6_sum/data",
+        "bpm6_saturation_value": "/entry/instrument/XBPM6/XBPM6_sum/saturation_value",
         "bpm6x": "/entry/instrument/XBPM6/XBPM6_x/data",
         "bpm6y": "/entry/instrument/XBPM6/XBPM6_y/data",
         "bpm6z": "/entry/instrument/XBPM6/XBPM6_skew/data",
@@ -487,16 +490,16 @@ csax_nxsas_values = {
     },
 
     "h5_dataset_calculated_input_values": {
-        "entry/instrument/source/distance": ('samz', lambda x: -33800. - x),
-        "entry/instrument/slit_0/distance": ('samz', lambda x: -33800. + 12100. - x),
-        "entry/instrument/slit_1/distance": ('samz', lambda x: -33800. + 26000. - x),
-        "entry/instrument/monochromator/wavelength": ('mokev', lambda x: 12.3984193 / x),
-        "entry/instrument/monochromator/distance": ('samz', lambda x: -33800. + 28580. - x),
-        "entry/instrument/mirror/distance": ('samz', lambda x: -33800. + 29430. - x),
-        "entry/instrument/slit_2/distance": ('samz', lambda x: -33800. + 30660. - x),
-        "entry/instrument/slit_3/distance": ('samz', lambda x: 0.0 - x),
-        "entry/instrument/filter_set/distance": ('samz', lambda x: 0.0 - x),
-        "entry/instrument/filter_set/attenuator_transmission": ('ftrans', lambda x: 10. ** x),
-        "entry/instrument/slit_4/distance": ('samz', lambda x: 0.0 - x)
+        "/entry/instrument/source/distance": ('samz', lambda x: -33800. - x),
+        "/entry/instrument/slit_0/distance": ('samz', lambda x: -33800. + 12100. - x),
+        "/entry/instrument/slit_1/distance": ('samz', lambda x: -33800. + 26000. - x),
+        "/entry/instrument/monochromator/wavelength": ('mokev', lambda x: 12.3984193 / x),
+        "/entry/instrument/monochromator/distance": ('samz', lambda x: -33800. + 28580. - x),
+        "/entry/instrument/mirror/distance": ('samz', lambda x: -33800. + 29430. - x),
+        "/entry/instrument/slit_2/distance": ('samz', lambda x: -33800. + 30660. - x),
+        "/entry/instrument/slit_3/distance": ('samz', lambda x: 0.0 - x),
+        "/entry/instrument/filter_set/distance": ('samz', lambda x: 0.0 - x),
+        "/entry/instrument/filter_set/attenuator_transmission": ('ftrans', lambda x: 10. ** x),
+        "/entry/instrument/slit_4/distance": ('samz', lambda x: 0.0 - x)
     }
 }
