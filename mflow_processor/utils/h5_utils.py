@@ -66,13 +66,19 @@ def create_datasets_from_data(file, datasets, dataset_dtypes=None):
     """
     for name, value in datasets.items():
         if dataset_dtypes and name in dataset_dtypes:
-            dtype = dataset_dtypes[name]
-            if dtype == "S":
-                file.create_dataset(name, data=np.string_(value))
-            else:
-                file.create_dataset(name, data=value, dtype=dtype)
+            try:
+                dtype = dataset_dtypes[name]
+                if dtype == "S":
+                    file.create_dataset(name, data=np.string_(value))
+                else:
+                    file.create_dataset(name, data=value, dtype=dtype)
+            except:
+                _logger.exception("Could not create dataset '%s' from value '%s' for type '%s'.", name, value, dtype)
         else:
-            file.create_dataset(name, data=value)
+            try:
+                file.create_dataset(name, data=value)
+            except:
+                _logger.exception("Could not create dataset '%s' from value '%s'.", name, value)
 
 
 def set_group_attributes(file, group_attributes):
@@ -95,17 +101,22 @@ def set_dataset_attributes(file, dataset_attributes):
     :param dataset_attributes: Dataset attributes to set.
     """
     for name, value in dataset_attributes.items():
-        dataset_name, attribute_name = name.split(":")
+        try:
 
-        if dataset_name in file:
-            dataset = file[dataset_name]
-            # Strings should be of fixed length.
-            if isinstance(value, str):
-                value = np.string_(value)
+            dataset_name, attribute_name = name.split(":")
 
-            dataset.attrs[attribute_name] = value
-        else:
-            raise ValueError("Dataset '%s' does not exist." % name)
+            if dataset_name in file:
+                dataset = file[dataset_name]
+                # Strings should be of fixed length.
+                if isinstance(value, str):
+                    value = np.string_(value)
+
+                dataset.attrs[attribute_name] = value
+            else:
+                raise ValueError("Dataset '%s' does not exist." % name)
+
+        except:
+            _logger.exception("Cannot set '%s' to '%s'.", name, value)
 
 
 def expand_dataset(dataset, received_frame_index, increase_step=DATASET_FRAMES_INCREASE_STEP):

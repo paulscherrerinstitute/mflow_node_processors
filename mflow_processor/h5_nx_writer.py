@@ -46,7 +46,7 @@ class HDF5FormatWriterProcessor(HDF5ChunkedWriterProcessor):
 
         self.__name__ = name
         self.h5_group_attributes.update(h5_schema["h5_group_attributes"])
-        self.h5_dataset_attributes.update(h5_schema["h5_group_attributes"])
+        self.h5_dataset_attributes.update(h5_schema["h5_dataset_attributes"])
         self.h5_datasets.update(h5_values["h5_dataset_fixed_values"])
 
         # Values mappings from outside.
@@ -56,38 +56,52 @@ class HDF5FormatWriterProcessor(HDF5ChunkedWriterProcessor):
         self.h5_nx_values = {}
 
     def prepare_nx_data(self):
+            # Process direct value copy datasets.
+            for input_name, target_datasets in self.h5_dataset_input_values.items():
 
-        # Process direct value copy datasets.
-        for input_name, target_datasets in self.h5_dataset_direct_input_values:
-            if input_name not in self.h5_nx_values:
-                self._logger.warning("h5_nx_values is missing value '%s' for attribute '%s'.",
-                                     input_name, target_datasets)
-                # Skip any further processing for this name.
-                continue
+                try:
 
-            dataset_value = self.h5_nx_values[input_name]
-            self._logger.debug("Setting value '%s' to dataset '%s'.", dataset_value, target_datasets)
+                    if input_name not in self.h5_nx_values:
+                        self._logger.warning("h5_nx_values is missing value '%s' for attribute '%s'.",
+                                             input_name, target_datasets)
+                        # Skip any further processing for this name.
+                        continue
 
-            # Target datasets can be a string (single target) or a list of strings (multiple targets).
-            if isinstance(target_datasets, list):
-                for dataset_name in target_datasets:
-                    self.h5_nx_values[dataset_name] = dataset_value
-            else:
-                self.h5_datasets[target_datasets] = dataset_value
+                    dataset_value = self.h5_nx_values[input_name]
+                    self._logger.debug("Setting value '%s' to dataset '%s'.", dataset_value, target_datasets)
 
-        # Process calculated value copy datasets.
-        for target_dataset, function_definition in self.h5_dataset_direct_input_values:
-            input_parameter = function_definition[0]
-            value_function = function_definition[1]
+                    # Target datasets can be a string (single target) or a list of strings (multiple targets).
+                    if isinstance(target_datasets, list):
+                        for dataset_name in target_datasets:
+                            self.h5_datasets[dataset_name] = dataset_value
+                    else:
+                        self.h5_datasets[target_datasets] = dataset_value
 
-            if input_parameter not in self.h5_nx_values:
-                self._logger.warning("h5_nx_values is missing input_parameter '%s' for attribute '%s'.",
-                                     input_parameter, target_datasets)
-                # Skip any further processing for this name.
-                continue
+                except:
+                    self._logger.exception("Cannot get nx data for attribute '%s'.", target_datasets)
 
-            input_value = self.h5_nx_values[input_parameter]
-            self.h5_datasets[target_datasets] = value_function(input_value)
+            # Process calculated value copy datasets.
+            for target_dataset, function_definition in self.h5_dataset_calculated_input_values.items():
+
+                if target_dataset == "/entry/instrument/slit_2/distance":
+                    a = 1
+
+                try:
+
+                    input_parameter = function_definition[0]
+                    value_function = function_definition[1]
+
+                    if input_parameter not in self.h5_nx_values:
+                        self._logger.warning("h5_nx_values is missing input_parameter '%s' for attribute '%s'.",
+                                             input_parameter, target_dataset)
+                        # Skip any further processing for this name.
+                        continue
+
+                    input_value = self.h5_nx_values[input_parameter]
+                    self.h5_datasets[target_dataset] = value_function(input_value)
+
+                except:
+                    self._logger.exception("Cannot calculate nx data for attribute '%s'.", target_datasets)
 
     def stop(self):
         self.prepare_nx_data()
