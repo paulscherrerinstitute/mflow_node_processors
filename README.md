@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/datastreaming/mflow_node_processors.svg?branch=master)](https://travis-ci.org/datastreaming/mflow_node_processors) [![Build status](https://ci.appveyor.com/api/projects/status/fc2nrw2gsetw699x?svg=true)](https://ci.appveyor.com/project/Babicaa/mflow-node-processors)
+
+
 # mflow node processors
 An mflow node processor is a standalone processes that receive, process, and maybe forward an mflow stream.
 To accomplish this it uses the **mflow_nodes** library, which provides a set of tools to easily develop, control, 
