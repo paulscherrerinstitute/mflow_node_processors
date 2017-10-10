@@ -9,19 +9,21 @@ default_output_file = "ignore_test_output.h5"
 default_dataset_name = "entry/dataset/data"
 
 
-def setup_writer(processor, parameters=None, connect_address="tcp://127.0.0.1:40000"):
+def setup_writer(processor, parameters=None, connect_address="tcp://127.0.0.1:40000", auto_start=True):
     """
     Setup and start the receiver with default values, mainly for testing purposes.
     To be used in the setUp test method.
     :param processor: Processor instance.
     :param parameters: Processor parameters. Defaults (dataset_name, output_file) provided.
     :param connect_address: Connection address. Default "tcp://127.0.0.1:40000".
+    :param auto_start: Start the node.
     :return: instance of ExternalProcessorWrapper.
     """
 
     # Setup the parameters for the processor.
     process_parameters = {"dataset_name": default_dataset_name,
                           "output_file": default_output_file}
+
     process_parameters.update(parameters or {})
 
     receiver_node = NodeManager(processor_function=get_processor_function(processor=processor),
@@ -30,7 +32,8 @@ def setup_writer(processor, parameters=None, connect_address="tcp://127.0.0.1:40
                                 initial_parameters=process_parameters,
                                 processor_instance=processor)
 
-    receiver_node.start()
+    if auto_start:
+        receiver_node.start()
 
     return receiver_node
 
