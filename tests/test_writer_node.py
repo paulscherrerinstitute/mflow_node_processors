@@ -11,26 +11,24 @@ from tests.helpers import setup_writer, cleanup_writer, default_output_file, def
 
 
 class TransferTest(unittest.TestCase):
-    def setUp(self):
-        self.receiver_node = setup_writer(processor=HDF5ChunkedWriterProcessor())
-
-    def tearDown(self):
-        cleanup_writer(self.receiver_node)
 
     def test_transfer(self):
         """
         Check if the message pipeline works - from receiving to writing the message down in H5 format.
         """
+        receiver_node = setup_writer(processor=HDF5ChunkedWriterProcessor())
+
         generate_test_array_stream(frame_shape=default_frame_shape, number_of_frames=default_number_of_frames)
 
         # Wait for the stream to complete transfer.
         sleep(0.5)
-        self.receiver_node.stop()
+
+        receiver_node.stop()
         # Wait for file to be written to disk.
         sleep(0.5)
 
         # Collect statistics.
-        statistics = self.receiver_node.get_statistics()
+        statistics = receiver_node.get_statistics()
 
         # Count the total number of received frames.
         self.assertEqual(statistics["messages_received"], default_number_of_frames, "Not all frames were transferred.")
@@ -51,6 +49,18 @@ class TransferTest(unittest.TestCase):
             self.assertTrue((dataset.value[frame_number] ==
                              generate_frame_data(default_frame_shape, frame_number)).all(),
                             "Dataset data does not match original data for frame %d." % frame_number)
+
+        cleanup_writer(receiver_node)
+
+    def test_set_parameters(self):
+        receiver_node = setup_writer(processor=HDF5ChunkedWriterProcessor(), auto_start=False)
+
+        receiver_node.start()
+        receiver_node.set_parameter()
+        sleep(1)
+        receiver_node.stop()
+
+        cleanup_writer(receiver_node)
 
 if __name__ == '__main__':
     unittest.main()
