@@ -4,9 +4,9 @@ from time import sleep
 
 import h5py
 
-from mflow_nodes.test_tools.m_generate_test_stream import generate_test_array_stream, generate_frame_data
+from mflow_nodes.test_tools.m_generate_test_stream import generate_test_array_stream
 from mflow_processor.h5_chunked_writer import HDF5ChunkedWriterProcessor
-from tests.helpers import setup_writer, cleanup_writer, default_output_file, default_dataset_name, \
+from tests.helpers import setup_writer, default_output_file, default_dataset_name, \
     default_number_of_frames, default_frame_shape
 
 
@@ -42,25 +42,7 @@ class TransferTest(unittest.TestCase):
 
         # Check if the shrink procedure worked correctly.
         dataset = file[default_dataset_name]
-        self.assertEqual(dataset.shape, (default_number_of_frames,) + default_frame_shape, "Dataset of incorrect size.")
 
-        # Check if all the frames are correct.
-        for frame_number in range(default_number_of_frames):
-            self.assertTrue((dataset.value[frame_number] ==
-                             generate_frame_data(default_frame_shape, frame_number)).all(),
-                            "Dataset data does not match original data for frame %d." % frame_number)
-
-        cleanup_writer(receiver_node)
-
-    def test_set_parameters(self):
-        receiver_node = setup_writer(processor=HDF5ChunkedWriterProcessor(), auto_start=False)
-
-        receiver_node.start()
-        receiver_node.set_parameter()
-        sleep(1)
-        receiver_node.stop()
-
-        cleanup_writer(receiver_node)
 
 if __name__ == '__main__':
     unittest.main()
