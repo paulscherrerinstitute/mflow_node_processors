@@ -46,11 +46,12 @@ def run(input_args, parameters=None):
         # The running event is used to signal that mflow has successfully started.
         while True:
             message = get_raw_mflow_message(stream.receive_raw())
-            frame_index = message.get_frame_index()
 
             # Process only valid messages.
             if message is not None:
                 bytes_to_write = message.get_data()
+                frame_index = message.get_frame_index()
+
                 dataset.id.write_direct_chunk((frame_index, 0, 0), bytes_to_write)
 
     except KeyboardInterrupt:
