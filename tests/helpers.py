@@ -26,7 +26,9 @@ def setup_writer(processor, parameters=None, connect_address="tcp://127.0.0.1:40
 
     process_parameters.update(parameters or {})
 
-    receiver_node = NodeManager(processor_function=get_processor_function(processor=processor),
+    receiver_node = NodeManager(processor_function=get_processor_function(processor=processor,
+                                                                          connection_address=connect_address,
+                                                                          receive_raw=True),
                                 receiver_function=get_receiver_function(connection_address=connect_address,
                                                                         receive_raw=True),
                                 initial_parameters=process_parameters,

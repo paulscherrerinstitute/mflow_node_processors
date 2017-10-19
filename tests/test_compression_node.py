@@ -27,7 +27,8 @@ class CompressionTest(unittest.TestCase):
         # Start the compressor.s
         compressor_procesor = LZ4CompressionProcessor()
         self.compression_node = NodeManager(
-            processor_function=get_processor_function(LZ4CompressionProcessor()),
+            processor_function=get_processor_function(processor=LZ4CompressionProcessor(),
+                                                      connection_address=STREAM_CONNECT_ADDRESS),
             receiver_function=get_receiver_function(connection_address=STREAM_CONNECT_ADDRESS),
             processor_instance=compressor_procesor,
             initial_parameters={"binding_address": WRITER_ADDRESS})
