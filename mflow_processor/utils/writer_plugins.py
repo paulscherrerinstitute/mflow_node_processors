@@ -11,15 +11,16 @@ def write_frame_index_to_dataset(target_dataset):
     return plugin
 
 
-def write_frame_parts_index(target_dataset):
+def write_header_parameter_to_dataset(header_parameter, target_dataset):
     """
     Create a separate dataset with frame indexes for each (upper, lower) part of the image.
+    :param header_parameter: Header parameter to write to the target dataset.
     :param target_dataset: Dataset to store the frame indexes into.
     :return: Function to pass to the writer as a plugin.
     """
     def plugin(writer, message):
         # Append the frame index to the specified dataset.
-        data = message.get_header()["frame_parts_index"]
+        data = message.get_header()[header_parameter]
         writer.h5_datasets.setdefault(target_dataset, []).append(data)
 
     return plugin
