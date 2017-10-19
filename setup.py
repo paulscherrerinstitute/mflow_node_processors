@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='mflow_node_processors',
-    version="1.2.2",
+    version="1.2.3",
     description="mflow stream node processors",
     author='Paul Scherrer Institute',
     author_email='andrej.babic@psi.ch',
