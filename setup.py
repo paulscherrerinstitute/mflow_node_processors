@@ -15,7 +15,8 @@ setup(
              'scripts/m_write_px_node.py',
              'scripts/m_proxy_node.py',
              "scripts/m_compression_node.py",
-             "scripts/m_nxmx_node.py"],
+             "scripts/m_nxmx_node.py",
+             "scripts/m_dummy_writer.py"],
 
     package_dir={"mflow_processor.scripts": 'scripts'},
 

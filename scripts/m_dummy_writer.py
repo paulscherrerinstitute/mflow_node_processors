@@ -12,10 +12,15 @@ IO_THREADS = 1
 RECEIVE_TIMEOUT = 1
 QUEUE_SIZE = 1000
 FRAME_SIZE = [1536, 1024]
+INITIAL_FRAMES = [100000]
 DTYPE = "uint16"
 
 
-def run(connection_address, output_file, process_uid):
+def run(input_args, parameters=None):
+    process_uid = input_args.process_uid
+    connect_address = input_args.connect_address
+    output_file = input_args.output_file
+
     os.setgid(process_uid)
     os.setuid(process_uid)
 
@@ -23,7 +28,7 @@ def run(connection_address, output_file, process_uid):
     context = zmq.Context(io_threads=IO_THREADS)
 
     stream = Stream()
-    stream.connect(address=connection_address,
+    stream.connect(address=connect_address,
                    conn_type=mflow.CONNECT,
                    mode=mflow.PULL,
                    receive_timeout=RECEIVE_TIMEOUT,
@@ -32,7 +37,7 @@ def run(connection_address, output_file, process_uid):
 
     file = h5py.File(output_file, "w")
     dataset = file.create_dataset(name="data",
-                                  shape=[10000] + FRAME_SIZE,
+                                  shape=INITIAL_FRAMES + FRAME_SIZE,
                                   maxshape=[None] + FRAME_SIZE,
                                   chunks=tuple([1] + FRAME_SIZE),
                                   dtype=DTYPE)
@@ -55,9 +60,9 @@ def run(connection_address, output_file, process_uid):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("connection_address", type=str, help="Address to connect to.")
+    parser.add_argument("connect_address", type=str, help="Address to connect to.")
     parser.add_argument("output_file", type=str, help="File to write to.")
     parser.add_argument("process_uid", type=str, help="Which user to write as.")
     arguments = parser.parse_args()
 
-    run(arguments.connection_address, arguments.output_file, arguments.process_uid)
+    run(arguments)
