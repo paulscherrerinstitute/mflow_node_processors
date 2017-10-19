@@ -17,7 +17,7 @@ DTYPE = "uint16"
 
 
 def run(input_args, parameters=None):
-    process_uid = input_args.process_uid
+    process_uid = int(input_args.process_uid)
     connect_address = input_args.connect_address
     output_file = input_args.output_file
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("connect_address", type=str, help="Address to connect to.")
     parser.add_argument("output_file", type=str, help="File to write to.")
-    parser.add_argument("process_uid", type=str, help="Which user to write as.")
+    parser.add_argument("process_uid", type=int, help="Which user to write as.")
     arguments = parser.parse_args()
 
     run(arguments)
