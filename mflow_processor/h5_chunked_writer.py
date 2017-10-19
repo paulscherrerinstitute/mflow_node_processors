@@ -174,8 +174,7 @@ class HDF5ChunkedWriterProcessor(BaseProcessor):
                                                                message.get_frame_size(),
                                                                message.get_frame_dtype())
 
-        self._logger.debug("Received frame '%d', writing as relative frame '%d'." % (frame_index,
-                                                                                     relative_frame_index))
+        self._logger.debug("Received frame '%d', writing as relative frame '%d'.", frame_index, relative_frame_index)
 
         frame_data = message.get_data()
         # Because the conversion to and from bytes is slow, mflow should be used in raw mode.
