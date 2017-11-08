@@ -90,7 +90,7 @@ class TransferTest(unittest.TestCase):
             "ftrans": 1
         }
 
-        self.receiver_node.set_parameters({("h5_nx_values", h5_nx_values)})
+        self.receiver_node.set_parameters({"h5_nx_values": h5_nx_values})
 
         generate_test_array_stream(frame_shape=default_frame_shape, number_of_frames=default_number_of_frames)
 
