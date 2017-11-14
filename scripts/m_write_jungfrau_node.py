@@ -23,7 +23,7 @@ def run(input_args, parameters=None):
     if "output_file" in input_args and input_args.output_file:
         parameters["output_file"] = input_args.output_file
 
-    plugins = [writer_plugins.write_frame_index_to_dataset(input_args.frame_index_dataset)]
+    plugins = [writer_plugins.write_header_parameters_to_dataset(input_args.group)]
 
     start_stream_node_helper(HDF5ChunkedWriterProcessor(plugins=plugins), input_args, parameters)
 
@@ -34,10 +34,10 @@ if __name__ == "__main__":
     parser.add_argument("--output_file", type=str, help="Name of output h5 file to write.")
     parser.add_argument("--compression", default=None, choices=['lz4'], help="Incoming stream compression.")
     parser.add_argument("--dataset", type=str, default="data", help="Name of the dataset tot store the frames into.")
-    parser.add_argument("--frame_index_dataset", type=str, default="frame_index", help="Name of the dataset to store "
-                                                                                       "the frame indexes into.")
+    parser.add_argument("--group", type=str, default="jungfrau", help="Name of the group to store "
+                                                                                       "the datasets into.")
     arguments = parser.parse_args()
 
     setup_logging(arguments.log_level)
 
-    run(arguments, parameters={"dataset_name": arguments.dataset})
+    run(arguments, parameters={"dataset_name": arguments.group + "/" + arguments.dataset})

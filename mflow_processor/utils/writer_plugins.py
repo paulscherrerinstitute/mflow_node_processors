@@ -24,3 +24,20 @@ def write_header_parameter_to_dataset(header_parameter, target_dataset):
         writer.h5_datasets.setdefault(target_dataset, []).append(data)
 
     return plugin
+
+
+def write_header_parameters_to_dataset(root_dataset):
+    """
+    Create a separate dataset with frame indexes for each parameter in the header, beside the
+    standard array ones ["shape", "type", "htype"].
+    :param root_dataset: group where to write metadata
+    :return: Function to pass to the writer as a plugin.
+    """
+    def plugin(writer, message):
+        # Append the frame index to the specified dataset.
+        for header_parameter, data in message.get_header().items():
+            if header_parameter in ["shape", "type", "htype"]:
+                continue
+            writer.h5_datasets.setdefault(root_dataset + "/" + header_parameter, []).append(data)
+
+    return plugin
