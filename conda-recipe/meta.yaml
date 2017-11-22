@@ -18,6 +18,7 @@ requirements:
         - h5py >=2.7.*
         - bitshuffle ==0.2.4
         - mflow_nodes >=0.0.5
+        - bsread
 
 test:
   source_files:
