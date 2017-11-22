@@ -23,6 +23,8 @@ class BsreadWriter(BaseProcessor):
 
         channels                       Channels to request from the dispatching layer.
         output_file                    File to write the stream to.
+        receive_timeout                Timeout to use when receiving data from the dispatching layer.
+
     """
     _logger = getLogger(__name__)
 
@@ -36,6 +38,9 @@ class BsreadWriter(BaseProcessor):
         # Parameters that need to be set.
         self.channels = None
         self.output_file = None
+
+        # Parameters with default value.
+        self.receive_timeout = 200
 
         self._receiving_thread = None
         self._stop_event = Event()
@@ -58,7 +63,7 @@ class BsreadWriter(BaseProcessor):
             raise ValueError(error_message)
 
     @staticmethod
-    def receive_messages(stop_event, connect_address, output_file):
+    def receive_messages(stop_event, connect_address, output_file, receive_timeout):
         _logger = getLogger("bsread_receive_message")
         _logger.info("Writing channels to output_file '%s'.", output_file)
         _logger.info("Connecting to stream '%s'.", connect_address)
@@ -67,7 +72,7 @@ class BsreadWriter(BaseProcessor):
 
         try:
             handler = extended.Handler()
-            receiver = mflow.connect(source)
+            receiver = mflow.connect(connect_address, receive_timeout=receive_timeout)
 
             h5_writer = writer.Writer()
             h5_writer.open_file(output_file)
@@ -82,7 +87,7 @@ class BsreadWriter(BaseProcessor):
                     first_iteration = False
 
         except:
-            _logger.error("Error while receiving bsread stream.")
+            _logger.exception("Error while receiving bsread stream.")
 
         finally:
             if h5_writer:
@@ -102,7 +107,8 @@ class BsreadWriter(BaseProcessor):
         self._stop_event.clear()
         self._receiving_thread = Thread(target=self.receive_messages, args=(self._stop_event,
                                                                             address,
-                                                                            self.output_file))
+                                                                            self.output_file,
+                                                                            self.receive_timeout))
         self._receiving_thread.start()
 
     def stop(self):
