@@ -4,7 +4,7 @@ from threading import Event, Thread
 from bsread.h5 import process_message
 from mflow import mflow
 
-from bsread import source, dispatcher, writer
+from bsread import dispatcher, writer
 from bsread.handlers import extended
 from mflow_nodes.processors.base import BaseProcessor
 
@@ -52,10 +52,7 @@ class BsreadWriter(BaseProcessor):
         """
         error_message = ""
 
-        if not self.channels:
-            error_message += "Parameter 'channels' not set.\n"
-
-        if not self.output_file:
+        if not self.output_file and self.channels:
             error_message += "Parameter 'output_file' not set.\n"
 
         if error_message:
@@ -100,6 +97,10 @@ class BsreadWriter(BaseProcessor):
         # Check if all the needed input parameters are available.
         self._validate_parameters()
         self._logger.debug("Starting mflow_processor.")
+
+        if not self.channels:
+            self._logger.info("No channels specified. Not writing anything.")
+            return
 
         self._logger.info("Requesting channels from dispatching layer: %s", self.channels)
         address = dispatcher.request_stream(self.channels)
