@@ -104,9 +104,8 @@ class BsreadWriter(BaseProcessor):
 
         _logger.debug("Stopping bsread h5 thread.")
 
-    def process_message(self, message):
-        if not self._running_event.is_set():
-            raise Exception("H5 writing thread stopped.")
+    def is_running(self):
+        return self._running_event.is_set()
 
     def start(self):
         self._logger.debug("Writer started.")
