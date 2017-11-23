@@ -137,7 +137,7 @@ class BsreadWriter(BaseProcessor):
     def stop(self):
         self._logger.debug("Writer stopped.")
 
-        self._running_event.set()
+        self._running_event.clear()
 
         if self._receiving_thread:
             self._receiving_thread.join()
