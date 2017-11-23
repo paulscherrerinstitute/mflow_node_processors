@@ -12,7 +12,7 @@ from mflow_processor.utils.h5_utils import create_folder_if_does_not_exist
 
 class BsreadWriter(BaseProcessor):
     """
-    H5 chunked writer
+    H5 bsread writer
 
     Writes the received stream to a HDF5 file.
 
@@ -25,6 +25,7 @@ class BsreadWriter(BaseProcessor):
         channels                       Channels to request from the dispatching layer.
         output_file                    File to write the stream to.
         receive_timeout                Timeout to use when receiving data from the dispatching layer.
+        n_pulses                       How many pulses to collect before stopping the processor.
 
     """
     _logger = getLogger(__name__)
