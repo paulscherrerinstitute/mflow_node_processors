@@ -42,9 +42,10 @@ class BsreadWriter(BaseProcessor):
 
         # Parameters with default value.
         self.receive_timeout = 200
+        self.n_pulses = 0
 
         self._receiving_thread = None
-        self._stop_event = Event()
+        self._running_event = Event()
 
     def _validate_parameters(self):
         """
@@ -61,7 +62,7 @@ class BsreadWriter(BaseProcessor):
             raise ValueError(error_message)
 
     @staticmethod
-    def receive_messages(stop_event, connect_address, output_file, receive_timeout, n_pulses):
+    def receive_messages(running_event, connect_address, output_file, receive_timeout, n_pulses):
         _logger = getLogger("bsread_receive_message")
         _logger.info("Writing channels to output_file '%s'.", output_file)
         _logger.info("Connecting to stream '%s'.", connect_address)
@@ -79,7 +80,9 @@ class BsreadWriter(BaseProcessor):
 
             first_iteration = True
 
-            while not stop_event.is_set():
+            running_event.set()
+
+            while running_event.is_set():
 
                 success = process_message(handler, receiver, h5_writer, first_iteration)
 
@@ -88,12 +91,14 @@ class BsreadWriter(BaseProcessor):
                     current_pulse += 1
 
                     if current_pulse == n_pulses:
-                        stop_event.set()
+                        running_event.clear()
 
         except:
             _logger.exception("Error while receiving bsread stream.")
 
         finally:
+            running_event.clear()
+
             if h5_writer:
                 h5_writer.close_file()
 
@@ -114,17 +119,21 @@ class BsreadWriter(BaseProcessor):
 
         create_folder_if_does_not_exist(self.output_file)
 
-        self._stop_event.clear()
-        self._receiving_thread = Thread(target=self.receive_messages, args=(self._stop_event,
+        self._running_event.clear()
+        self._receiving_thread = Thread(target=self.receive_messages, args=(self._running_event,
                                                                             address,
                                                                             self.output_file,
-                                                                            self.receive_timeout))
+                                                                            self.receive_timeout,
+                                                                            self.n_pulses))
+
         self._receiving_thread.start()
+
+        self._running_event.wait()
 
     def stop(self):
         self._logger.debug("Writer stopped.")
 
-        self._stop_event.set()
+        self._running_event.set()
 
         if self._receiving_thread:
             self._receiving_thread.join()
