@@ -61,12 +61,14 @@ class BsreadWriter(BaseProcessor):
             raise ValueError(error_message)
 
     @staticmethod
-    def receive_messages(stop_event, connect_address, output_file, receive_timeout):
+    def receive_messages(stop_event, connect_address, output_file, receive_timeout, n_pulses):
         _logger = getLogger("bsread_receive_message")
         _logger.info("Writing channels to output_file '%s'.", output_file)
         _logger.info("Connecting to stream '%s'.", connect_address)
 
         h5_writer = None
+
+        current_pulse = 0
 
         try:
             handler = extended.Handler()
@@ -83,6 +85,10 @@ class BsreadWriter(BaseProcessor):
 
                 if success:
                     first_iteration = False
+                    current_pulse += 1
+
+                    if current_pulse == n_pulses:
+                        stop_event.set()
 
         except:
             _logger.exception("Error while receiving bsread stream.")
