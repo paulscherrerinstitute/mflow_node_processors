@@ -7,6 +7,7 @@ from mflow import mflow
 from bsread import dispatcher, writer
 from bsread.handlers import extended
 from mflow_nodes.processors.base import BaseProcessor
+from mflow_processor.utils.h5_utils import create_folder_if_does_not_exist
 
 
 class BsreadWriter(BaseProcessor):
@@ -104,6 +105,8 @@ class BsreadWriter(BaseProcessor):
 
         self._logger.info("Requesting channels from dispatching layer: %s", self.channels)
         address = dispatcher.request_stream(self.channels)
+
+        create_folder_if_does_not_exist(self.output_file)
 
         self._stop_event.clear()
         self._receiving_thread = Thread(target=self.receive_messages, args=(self._stop_event,

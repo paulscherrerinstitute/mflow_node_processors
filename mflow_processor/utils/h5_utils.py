@@ -1,5 +1,5 @@
 from logging import getLogger
-
+import os
 import numpy as np
 
 # Initial size of the dataset (number of frames).
@@ -8,6 +8,17 @@ DATASET_INITIAL_FRAME_COUNT = 1000
 DATASET_FRAMES_INCREASE_STEP = 1000
 
 _logger = getLogger(__name__)
+
+
+def create_folder_if_does_not_exist(filename):
+
+    filename_folder = os.path.dirname(filename)
+
+    if filename_folder and not os.path.exists(filename_folder):
+        _logger.info("Creating folder '%s'.", filename_folder)
+        os.makedirs(filename_folder, exist_ok=True)
+    else:
+        _logger.info("Folder '%s' already exists.", filename_folder)
 
 
 def populate_h5_file(file, h5_group_attributes=None, h5_datasets=None,

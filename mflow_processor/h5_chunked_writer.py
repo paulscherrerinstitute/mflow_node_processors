@@ -4,7 +4,7 @@ from logging import getLogger
 from mflow_nodes.processors.base import BaseProcessor
 
 from mflow_processor.utils.h5_utils import populate_h5_file, create_dataset, compact_dataset, expand_dataset, \
-    set_dataset_attributes
+    set_dataset_attributes, create_folder_if_does_not_exist
 
 
 class HDF5ChunkedWriterProcessor(BaseProcessor):
@@ -92,6 +92,9 @@ class HDF5ChunkedWriterProcessor(BaseProcessor):
             self._close_file()
 
         filename = self.output_file.format(chunk_number=frame_chunk)
+
+        create_folder_if_does_not_exist(filename)
+
         self._logger.debug("Writing to file '%s' chunks of size %s." % (filename, frame_size))
 
         # Truncate file if it already exists.
