@@ -16,6 +16,8 @@ compression_data = {
 def run(input_args, parameters=None):
     parameters = parameters or {}
 
+    parameters["dataset_name"] = input_args.group + "/" + input_args.dataset
+
     if "compression" in input_args and input_args.compression:
         compression_arguments = compression_data.get(input_args.compression, {})
         parameters.update(compression_arguments)
@@ -40,4 +42,4 @@ if __name__ == "__main__":
 
     setup_logging(arguments.log_level)
 
-    run(arguments, parameters={"dataset_name": arguments.group + "/" + arguments.dataset})
+    run(arguments)
