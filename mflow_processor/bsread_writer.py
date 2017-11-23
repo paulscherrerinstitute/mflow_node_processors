@@ -4,7 +4,7 @@ from threading import Event, Thread
 from bsread.h5 import process_message
 from mflow import mflow
 
-from bsread import dispatcher, writer
+from bsread import dispatcher, writer, SUB
 from bsread.handlers import extended
 from mflow_nodes.processors.base import BaseProcessor
 from mflow_processor.utils.h5_utils import create_folder_if_does_not_exist
@@ -70,7 +70,7 @@ class BsreadWriter(BaseProcessor):
 
         try:
             handler = extended.Handler()
-            receiver = mflow.connect(connect_address, receive_timeout=receive_timeout)
+            receiver = mflow.connect(connect_address, receive_timeout=receive_timeout, mode=SUB)
 
             h5_writer = writer.Writer()
             h5_writer.open_file(output_file)
