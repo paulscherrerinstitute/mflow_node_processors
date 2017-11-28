@@ -10,6 +10,9 @@ from mflow_nodes.processors.base import BaseProcessor
 from mflow_processor.utils.h5_utils import create_folder_if_does_not_exist
 
 
+BSREAD_START_TIMEOUT = 2
+
+
 class BsreadWriter(BaseProcessor):
     """
     H5 bsread writer
@@ -63,16 +66,16 @@ class BsreadWriter(BaseProcessor):
             raise ValueError(error_message)
 
     @staticmethod
-    def receive_messages(running_event, connect_address, output_file, receive_timeout, n_pulses):
-        _logger = getLogger("bsread_receive_message")
-        _logger.info("Writing channels to output_file '%s'.", output_file)
-        _logger.info("Connecting to stream '%s'.", connect_address)
-
-        h5_writer = None
-
-        current_pulse = 0
-
+    def receive_messages(running_event, connect_address, output_file, receive_timeout, n_pulses, start_event):
         try:
+            _logger = getLogger("bsread_receive_message")
+            _logger.info("Writing channels to output_file '%s'.", output_file)
+            _logger.info("Connecting to stream '%s'.", connect_address)
+
+            h5_writer = None
+
+            current_pulse = 0
+
             handler = extended.Handler()
             receiver = mflow.connect(connect_address, receive_timeout=receive_timeout, mode=SUB)
 
@@ -83,7 +86,7 @@ class BsreadWriter(BaseProcessor):
 
             running_event.set()
 
-            while running_event.is_set():
+            while running_event.is_set() and start_event.is_set():
 
                 success = process_message(handler, receiver, h5_writer, first_iteration)
 
@@ -100,7 +103,7 @@ class BsreadWriter(BaseProcessor):
         finally:
             running_event.clear()
 
-            if h5_writer:
+            if h5_writer and h5_writer.file:
                 h5_writer.close_file()
 
         _logger.debug("Stopping bsread h5 thread.")
@@ -124,15 +127,22 @@ class BsreadWriter(BaseProcessor):
         create_folder_if_does_not_exist(self.output_file)
 
         self._running_event.clear()
+
+        start_event = Event()
+        start_event.set()
+
         self._receiving_thread = Thread(target=self.receive_messages, args=(self._running_event,
                                                                             address,
                                                                             self.output_file,
                                                                             self.receive_timeout,
-                                                                            self.n_pulses))
+                                                                            self.n_pulses,
+                                                                            start_event))
 
         self._receiving_thread.start()
 
-        self._running_event.wait()
+        if not self._running_event.wait(BSREAD_START_TIMEOUT):
+            start_event.clear()
+            raise ValueError("Cannot start bsread writing process in time.")
 
     def stop(self):
         self._logger.debug("Writer stopped.")
