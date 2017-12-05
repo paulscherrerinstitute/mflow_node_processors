@@ -1,7 +1,7 @@
 from logging import getLogger
 from threading import Event, Thread
 
-from bsread.h5 import process_message
+from bsread.h5 import process_message_compact
 from mflow import mflow
 
 from bsread import dispatcher, writer, SUB
@@ -88,7 +88,7 @@ class BsreadWriter(BaseProcessor):
 
             while running_event.is_set() and start_event.is_set():
 
-                success = process_message(handler, receiver, h5_writer, first_iteration)
+                success = process_message_compact(handler, receiver, h5_writer, first_iteration)
 
                 if success:
                     first_iteration = False
