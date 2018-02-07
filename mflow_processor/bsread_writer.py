@@ -1,16 +1,32 @@
 from logging import getLogger
 from threading import Event, Thread
+from collections import OrderedDict
 
-from bsread.h5 import process_message_compact
 from mflow import mflow
-
 from bsread import dispatcher, writer, SUB
 from bsread.handlers import extended
 from mflow_nodes.processors.base import BaseProcessor
 from mflow_processor.utils.h5_utils import create_folder_if_does_not_exist
 
-
 BSREAD_START_TIMEOUT = 2
+BUFFER_SIZE = 100
+
+
+class Buffer(OrderedDict):
+    # Buffer for storing realtime bsread messages (OrderedDict with a maximum capacity)
+    def __init__(self, *args, **kwds):
+        self.maxlen = kwds.pop("maxlen", None)
+        OrderedDict.__init__(self, *args, **kwds)
+        self._check_size_limit()
+
+    def __setitem__(self, key, value):
+        OrderedDict.__setitem__(self, key, value)
+        self._check_size_limit()
+
+    def _check_size_limit(self):
+        if self.maxlen is not None:
+            while len(self) > self.maxlen:
+                self.popitem(last=False)
 
 
 class BsreadWriter(BaseProcessor):
@@ -48,6 +64,8 @@ class BsreadWriter(BaseProcessor):
         self.receive_timeout = 200
         self.n_pulses = 0
 
+        self._buffer = Buffer(maxlen=BUFFER_SIZE)
+
         self._receiving_thread = None
         self._running_event = Event()
 
@@ -65,8 +83,7 @@ class BsreadWriter(BaseProcessor):
             self._logger.error(error_message)
             raise ValueError(error_message)
 
-    @staticmethod
-    def receive_messages(running_event, connect_address, output_file, receive_timeout, n_pulses, start_event):
+    def receive_messages(self, running_event, connect_address, output_file, receive_timeout, n_pulses, start_event):
         _logger = getLogger("bsread_receive_message")
         _logger.info("Writing channels to output_file '%s'.", output_file)
         _logger.info("Connecting to stream '%s'.", connect_address)
@@ -82,20 +99,26 @@ class BsreadWriter(BaseProcessor):
             h5_writer = writer.Writer()
             h5_writer.open_file(output_file)
 
-            first_iteration = True
-
             running_event.set()
 
             while running_event.is_set() and start_event.is_set():
 
-                success = process_message_compact(handler, receiver, h5_writer, first_iteration)
+                message_data = receiver.receive(handler=handler.receive)
 
-                if success:
-                    first_iteration = False
-                    current_pulse += 1
+                # In case you set a receive timeout, the returned message can be None.
+                if message_data is None:
+                    return False
 
-                    if current_pulse == n_pulses:
-                        running_event.clear()
+                message_data = message_data.data
+
+                # TODO: what is the correct key?
+                pulse_id = message_data['pulse_id_array']
+                self._buffer[pulse_id] = message_data
+
+                current_pulse += 1
+
+                if current_pulse == n_pulses:
+                    running_event.clear()
 
         except:
             _logger.exception("Error while receiving bsread stream.")
@@ -151,4 +174,3 @@ class BsreadWriter(BaseProcessor):
 
         if self._receiving_thread:
             self._receiving_thread.join()
-
