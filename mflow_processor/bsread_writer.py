@@ -67,13 +67,13 @@ class BsreadWriter(BaseProcessor):
 
     @staticmethod
     def receive_messages(running_event, connect_address, output_file, receive_timeout, n_pulses, start_event):
+        _logger = getLogger("bsread_receive_message")
+        _logger.info("Writing channels to output_file '%s'.", output_file)
+        _logger.info("Connecting to stream '%s'.", connect_address)
+
+        h5_writer = None
+
         try:
-            _logger = getLogger("bsread_receive_message")
-            _logger.info("Writing channels to output_file '%s'.", output_file)
-            _logger.info("Connecting to stream '%s'.", connect_address)
-
-            h5_writer = None
-
             current_pulse = 0
 
             handler = extended.Handler()
