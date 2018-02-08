@@ -59,6 +59,8 @@ class BsreadWriter(BaseProcessor):
         # Parameters that need to be set.
         self.channels = None
         self.output_file = None
+        self.start_pulse = None
+        self.end_pulse = None
 
         # Parameters with default value.
         self.receive_timeout = 200
@@ -67,6 +69,7 @@ class BsreadWriter(BaseProcessor):
         self._buffer = Buffer(maxlen=BUFFER_SIZE)
 
         self._receiving_thread = None
+        self._writing_thread = None
         self._running_event = Event()
 
     def _validate_parameters(self):
@@ -83,21 +86,15 @@ class BsreadWriter(BaseProcessor):
             self._logger.error(error_message)
             raise ValueError(error_message)
 
-    def receive_messages(self, running_event, connect_address, output_file, receive_timeout, n_pulses, start_event):
+    def receive_messages(self, running_event, connect_address, receive_timeout, n_pulses, start_event):
         _logger = getLogger("bsread_receive_message")
-        _logger.info("Writing channels to output_file '%s'.", output_file)
         _logger.info("Connecting to stream '%s'.", connect_address)
-
-        h5_writer = None
 
         try:
             current_pulse = 0
 
             handler = extended.Handler()
             receiver = mflow.connect(connect_address, receive_timeout=receive_timeout, mode=SUB)
-
-            h5_writer = writer.Writer()
-            h5_writer.open_file(output_file)
 
             running_event.set()
 
@@ -126,10 +123,36 @@ class BsreadWriter(BaseProcessor):
         finally:
             running_event.clear()
 
-            if h5_writer and h5_writer.file:
-                h5_writer.close_file()
-
         _logger.debug("Stopping bsread h5 thread.")
+
+    def write_messages(self):
+        _logger = getLogger("bsread_write_message")
+
+        if self.start_pulse:
+            start_pulse = self.start_pulse
+            n_pulses = self.n_pulses
+            self.start_pulse = None
+            self.n_pulses = 0
+
+            h5_writer = None
+            _logger.info("Writing channels to output_file '%s'.", self.output_file)
+
+            try:
+                h5_writer = writer.Writer()
+                h5_writer.open_file(self.output_file)
+
+                if self.start_pulse in self._buffer:
+                    # TODO: save messages to hdf5 file
+                    pass
+
+            except:
+                _logger.exception("Error while writing bsread stream.")
+
+            finally:
+                if h5_writer and h5_writer.file:
+                    h5_writer.close_file()
+
+            _logger.debug("Stopping bsread h5 thread.")
 
     def is_running(self):
         return self._running_event.is_set()
@@ -154,14 +177,14 @@ class BsreadWriter(BaseProcessor):
         start_event = Event()
         start_event.set()
 
-        self._receiving_thread = Thread(target=self.receive_messages, args=(self._running_event,
-                                                                            address,
-                                                                            self.output_file,
-                                                                            self.receive_timeout,
-                                                                            self.n_pulses,
-                                                                            start_event))
+        self._receiving_thread = Thread(target=self.receive_messages,
+                                        args=(self._running_event, address, self.receive_timeout,
+                                              self.n_pulses, start_event))
+
+        self._writing_thread = Thread(target=self.write_messages)
 
         self._receiving_thread.start()
+        self._writing_thread.start()
 
         if not self._running_event.wait(BSREAD_START_TIMEOUT):
             start_event.clear()
@@ -174,3 +197,6 @@ class BsreadWriter(BaseProcessor):
 
         if self._receiving_thread:
             self._receiving_thread.join()
+
+        if self._writing_thread:
+            self._writing_thread.join()
