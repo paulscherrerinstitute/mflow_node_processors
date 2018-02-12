@@ -4,7 +4,7 @@ from collections import deque
 
 from mflow import mflow
 from bsread import dispatcher, writer, SUB
-from bsread.handlers import extended
+from bsread.handlers import compact
 from mflow_nodes.processors.base import BaseProcessor
 from mflow_processor.utils.h5_utils import create_folder_if_does_not_exist
 
@@ -76,7 +76,7 @@ class BsreadWriter(BaseProcessor):
         try:
             current_pulse = 0
 
-            handler = extended.Handler()
+            handler = compact.Handler()
             receiver = mflow.connect(connect_address, receive_timeout=receive_timeout, mode=SUB)
 
             running_event.set()
