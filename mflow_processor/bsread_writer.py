@@ -1,6 +1,6 @@
 from logging import getLogger
 from threading import Event, Thread
-from collections import OrderedDict
+from collections import deque
 
 from mflow import mflow
 from bsread import dispatcher, writer, SUB
@@ -10,23 +10,6 @@ from mflow_processor.utils.h5_utils import create_folder_if_does_not_exist
 
 BSREAD_START_TIMEOUT = 2
 BUFFER_SIZE = 100
-
-
-class Buffer(OrderedDict):
-    # Buffer for storing realtime bsread messages (OrderedDict with a maximum capacity)
-    def __init__(self, *args, **kwds):
-        self.maxlen = kwds.pop("maxlen", None)
-        OrderedDict.__init__(self, *args, **kwds)
-        self._check_size_limit()
-
-    def __setitem__(self, key, value):
-        OrderedDict.__setitem__(self, key, value)
-        self._check_size_limit()
-
-    def _check_size_limit(self):
-        if self.maxlen is not None:
-            while len(self) > self.maxlen:
-                self.popitem(last=False)
 
 
 class BsreadWriter(BaseProcessor):
@@ -66,7 +49,7 @@ class BsreadWriter(BaseProcessor):
         self.receive_timeout = 200
         self.n_pulses = 0
 
-        self._buffer = Buffer(maxlen=BUFFER_SIZE)
+        self._buffer = deque(maxlen=BUFFER_SIZE)
 
         self._receiving_thread = None
         self._writing_thread = None
@@ -106,11 +89,8 @@ class BsreadWriter(BaseProcessor):
                 if message_data is None:
                     return False
 
-                message_data = message_data.data
-
-                # TODO: what is the correct key?
-                pulse_id = message_data['pulse_id_array']
-                self._buffer[pulse_id] = message_data
+                # TODO: message_data or message_data.data?
+                self._buffer.append(message_data.data)
 
                 current_pulse += 1
 
@@ -141,9 +121,10 @@ class BsreadWriter(BaseProcessor):
                 h5_writer = writer.Writer()
                 h5_writer.open_file(self.output_file)
 
-                if self.start_pulse in self._buffer:
+                while True:
+                    next_msg = self._buffer.popleft()
+                    pulse_id = next_msg['pulse_id']
                     # TODO: save messages to hdf5 file
-                    pass
 
             except:
                 _logger.exception("Error while writing bsread stream.")
