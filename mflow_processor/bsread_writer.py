@@ -92,13 +92,17 @@ class BsreadWriter(BaseProcessor):
                 if message_data is None:
                     continue
 
-                # TODO: message_data or message_data.data?
-                self._buffer.append(message_data.data)
-
+                self._buffer.append(message_data)
                 current_pulse += 1
 
                 if current_pulse == n_pulses:
                     running_event.clear()
+
+                # launch an hdf5 writing thread upon start_pulse setup
+                if self.start_pulse:
+                    self._writing_thread = Thread(target=self.write_messages, args=(self.start_pulse, ))
+                    self._writing_thread.start()
+                    self.start_pulse = None
 
         except:
             _logger.exception("Error while receiving bsread stream.")
@@ -108,35 +112,33 @@ class BsreadWriter(BaseProcessor):
 
         _logger.debug("Stopping bsread h5 thread.")
 
-    def write_messages(self):
+    def write_messages(self, start_pulse_id):
+        from time import sleep
         _logger = getLogger("bsread_write_message")
 
-        if self.start_pulse:
-            start_pulse = self.start_pulse
-            n_pulses = self.n_pulses
-            self.start_pulse = None
-            self.n_pulses = 0
+        h5_writer = None
+        _logger.info("Writing channels to output_file '%s'.", self.output_file)
 
-            h5_writer = None
-            _logger.info("Writing channels to output_file '%s'.", self.output_file)
+        try:
+            h5_writer = writer.Writer()
+            h5_writer.open_file(self.output_file)
 
-            try:
-                h5_writer = writer.Writer()
-                h5_writer.open_file(self.output_file)
-
-                while True:
+            while self._running_event.is_set():
+                if len(self._buffer) > 0:
                     next_msg = self._buffer.popleft()
-                    pulse_id = next_msg['pulse_id']
+
                     # TODO: save messages to hdf5 file
+                    pulse_id = next_msg.data.pulse_id
+                    sleep(0.01)
 
-            except:
-                _logger.exception("Error while writing bsread stream.")
+        except:
+            _logger.exception("Error while writing bsread stream.")
 
-            finally:
-                if h5_writer and h5_writer.file:
-                    h5_writer.close_file()
+        finally:
+            if h5_writer and h5_writer.file:
+                h5_writer.close_file()
 
-            _logger.debug("Stopping bsread h5 thread.")
+        _logger.debug("Stopping bsread h5 thread.")
 
     def is_running(self):
         return self._running_event.is_set()
@@ -158,10 +160,7 @@ class BsreadWriter(BaseProcessor):
                                         args=(self._running_event, address, self.receive_timeout,
                                               self.n_pulses))
 
-        self._writing_thread = Thread(target=self.write_messages)
-
         self._receiving_thread.start()
-        self._writing_thread.start()
 
         if not self._running_event.wait(BSREAD_START_TIMEOUT):
             raise ValueError("Cannot start bsread writing process in time.")
