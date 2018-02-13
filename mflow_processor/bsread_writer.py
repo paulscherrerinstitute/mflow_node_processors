@@ -3,10 +3,10 @@ from threading import Event, Thread
 from collections import deque
 
 from mflow import mflow
-from bsread import dispatcher, writer, SUB
-from bsread.handlers import compact
 from mflow_nodes.processors.base import BaseProcessor
 from mflow_processor.utils.h5_utils import create_folder_if_does_not_exist
+from bsread import dispatcher, writer, SUB
+from bsread.handlers import compact
 
 BSREAD_START_TIMEOUT = 2
 BUFFER_SIZE = 100
@@ -46,7 +46,7 @@ class BsreadWriter(BaseProcessor):
         self.end_pulse = None
 
         # Parameters with default value.
-        self.receive_timeout = 200
+        self.receive_timeout = 1000
         self.n_pulses = 0
 
         self._buffer = deque(maxlen=BUFFER_SIZE)
@@ -69,7 +69,7 @@ class BsreadWriter(BaseProcessor):
             self._logger.error(error_message)
             raise ValueError(error_message)
 
-    def receive_messages(self, running_event, connect_address, receive_timeout, n_pulses, start_event):
+    def receive_messages(self, running_event, connect_address, receive_timeout, n_pulses):
         _logger = getLogger("bsread_receive_message")
         _logger.info("Connecting to stream '%s'.", connect_address)
 
@@ -81,13 +81,13 @@ class BsreadWriter(BaseProcessor):
 
             running_event.set()
 
-            while running_event.is_set() and start_event.is_set():
+            while running_event.is_set():
 
                 message_data = receiver.receive(handler=handler.receive)
 
                 # In case you set a receive timeout, the returned message can be None.
                 if message_data is None:
-                    return False
+                    continue
 
                 # TODO: message_data or message_data.data?
                 self._buffer.append(message_data.data)
@@ -155,12 +155,9 @@ class BsreadWriter(BaseProcessor):
 
         self._running_event.clear()
 
-        start_event = Event()
-        start_event.set()
-
         self._receiving_thread = Thread(target=self.receive_messages,
                                         args=(self._running_event, address, self.receive_timeout,
-                                              self.n_pulses, start_event))
+                                              self.n_pulses))
 
         self._writing_thread = Thread(target=self.write_messages)
 
@@ -168,7 +165,6 @@ class BsreadWriter(BaseProcessor):
         self._writing_thread.start()
 
         if not self._running_event.wait(BSREAD_START_TIMEOUT):
-            start_event.clear()
             raise ValueError("Cannot start bsread writing process in time.")
 
     def stop(self):
