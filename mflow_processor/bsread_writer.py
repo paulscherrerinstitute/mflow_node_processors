@@ -23,12 +23,9 @@ class BsreadWriter(BaseProcessor):
         stop                           Stop the writer, compact the dataset and close the file.
 
     Writer parameters:
-
         channels                       Channels to request from the dispatching layer.
         output_file                    File to write the stream to.
         receive_timeout                Timeout to use when receiving data from the dispatching layer.
-        n_pulses                       How many pulses to collect before stopping the processor.
-
     """
     _logger = getLogger(__name__)
 
@@ -47,7 +44,6 @@ class BsreadWriter(BaseProcessor):
 
         # Parameters with default value.
         self.receive_timeout = 1000
-        self.n_pulses = 0
 
         self._buffer = deque(maxlen=BUFFER_SIZE)
 
@@ -72,13 +68,11 @@ class BsreadWriter(BaseProcessor):
             self._logger.error(error_message)
             raise ValueError(error_message)
 
-    def receive_messages(self, running_event, connect_address, receive_timeout, n_pulses):
+    def receive_messages(self, running_event, connect_address, receive_timeout):
         _logger = getLogger("bsread_receive_message")
         _logger.info("Connecting to stream '%s'.", connect_address)
 
         try:
-            current_pulse = 0
-
             handler = compact.Handler()
             receiver = mflow.connect(connect_address, receive_timeout=receive_timeout, mode=SUB)
 
@@ -93,10 +87,6 @@ class BsreadWriter(BaseProcessor):
                     continue
 
                 self._buffer.append(message_data)
-                current_pulse += 1
-
-                if current_pulse == n_pulses:
-                    running_event.clear()
 
                 # launch an hdf5 writing thread upon start_pulse setup
                 if self.start_pulse:
@@ -157,8 +147,7 @@ class BsreadWriter(BaseProcessor):
         self._running_event.clear()
 
         self._receiving_thread = Thread(target=self.receive_messages,
-                                        args=(self._running_event, address, self.receive_timeout,
-                                              self.n_pulses))
+                                        args=(self._running_event, address, self.receive_timeout))
 
         self._receiving_thread.start()
 
