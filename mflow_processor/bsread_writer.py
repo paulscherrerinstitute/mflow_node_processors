@@ -68,18 +68,17 @@ class BsreadWriter(BaseProcessor):
             self._logger.error(error_message)
             raise ValueError(error_message)
 
-    def receive_messages(self, running_event, connect_address, receive_timeout):
+    def receive_messages(self, connect_address):
         _logger = getLogger("bsread_receive_message")
         _logger.info("Connecting to stream '%s'.", connect_address)
 
         try:
             handler = compact.Handler()
-            receiver = mflow.connect(connect_address, receive_timeout=receive_timeout, mode=SUB)
+            receiver = mflow.connect(connect_address, receive_timeout=self.receive_timeout, mode=SUB)
 
-            running_event.set()
+            self._running_event.set()
 
-            while running_event.is_set():
-
+            while self._running_event.is_set():
                 message_data = receiver.receive(handler=handler.receive)
 
                 # In case you set a receive timeout, the returned message can be None.
@@ -98,7 +97,7 @@ class BsreadWriter(BaseProcessor):
             _logger.exception("Error while receiving bsread stream.")
 
         finally:
-            running_event.clear()
+            self._running_event.clear()
 
         _logger.debug("Stopping bsread h5 thread.")
 
@@ -146,9 +145,7 @@ class BsreadWriter(BaseProcessor):
 
         self._running_event.clear()
 
-        self._receiving_thread = Thread(target=self.receive_messages,
-                                        args=(self._running_event, address, self.receive_timeout))
-
+        self._receiving_thread = Thread(target=self.receive_messages, args=(address, ))
         self._receiving_thread.start()
 
         if not self._running_event.wait(BSREAD_START_TIMEOUT):
