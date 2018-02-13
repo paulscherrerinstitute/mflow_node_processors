@@ -62,8 +62,11 @@ class BsreadWriter(BaseProcessor):
         """
         error_message = ""
 
-        if not self.output_file and self.channels:
+        if not self.output_file:
             error_message += "Parameter 'output_file' not set.\n"
+
+        if not self.channels:
+            error_message += "No channels specified.\n"
 
         if error_message:
             self._logger.error(error_message)
@@ -143,10 +146,6 @@ class BsreadWriter(BaseProcessor):
         # Check if all the needed input parameters are available.
         self._validate_parameters()
         self._logger.debug("Starting mflow_processor.")
-
-        if not self.channels:
-            self._logger.info("No channels specified. Not writing anything.")
-            return
 
         self._logger.info("Requesting channels from dispatching layer: %s", self.channels)
         address = dispatcher.request_stream(self.channels)
