@@ -39,8 +39,8 @@ class BsreadWriter(BaseProcessor):
         # Parameters that need to be set.
         self.channels = None
         self.output_file = None
-        self.start_pulse = None
-        self.end_pulse = None
+        self.start_pulse_id = None
+        self.end_pulse_id = None
 
         # Parameters with default value.
         self.receive_timeout = 1000
@@ -86,12 +86,12 @@ class BsreadWriter(BaseProcessor):
                     continue
 
                 self._buffer.append(message_data)
-
+                print(message_data.data.pulse_id, len(self._buffer), self.start_pulse_id)
                 # launch an hdf5 writing thread upon start_pulse setup
-                if self.start_pulse:
-                    self._writing_thread = Thread(target=self.write_messages, args=(self.start_pulse, ))
+                if self.start_pulse_id:
+                    self._writing_thread = Thread(target=self.write_messages, args=(self.start_pulse_id,))
                     self._writing_thread.start()
-                    self.start_pulse = None
+                    self.start_pulse_id = None
 
         except:
             _logger.exception("Error while receiving bsread stream.")
@@ -111,14 +111,39 @@ class BsreadWriter(BaseProcessor):
         try:
             h5_writer = writer.Writer()
             h5_writer.open_file(self.output_file)
+            first_iteration = True
+
+            if start_pulse_id < self._buffer[0].data.pulse_id:
+                _logger.warning("start_pulse_id < oldest buffered message pulse_id")
 
             while self._running_event.is_set():
-                if len(self._buffer) > 0:
-                    next_msg = self._buffer.popleft()
+                if len(self._buffer) == 0:
+                    continue  # wait for more messages being buffered
 
-                    # TODO: save messages to hdf5 file
-                    pulse_id = next_msg.data.pulse_id
-                    sleep(0.01)
+                # process the oldest buffered message
+                next_msg = self._buffer.popleft()
+                msg_pulse_id = next_msg.data.pulse_id
+
+                if self.end_pulse_id and self.end_pulse_id < msg_pulse_id:
+                    # no more messages to write
+                    end_pulse_id = self.end_pulse_id
+                    self.end_pulse_id = None
+
+                    # finilize hdf5 file
+                    if end_pulse_id < msg_pulse_id:
+                        # TODO: prune data on disk
+                        print('prunning from', msg_pulse_id, 'to', end_pulse_id)
+
+                    break
+
+                if msg_pulse_id < start_pulse_id:
+                    print('discarding', msg_pulse_id)
+                    continue  # discard the message
+
+                # TODO: save messages to hdf5 file
+                first_iteration = False
+                print('processing', msg_pulse_id, start_pulse_id)
+                sleep(0.01)
 
         except:
             _logger.exception("Error while writing bsread stream.")
