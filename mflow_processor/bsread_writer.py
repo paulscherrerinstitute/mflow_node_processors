@@ -28,6 +28,8 @@ class BsreadWriter(BaseProcessor):
         channels                       Channels to request from the dispatching layer.
         output_file                    File to write the stream to.
         receive_timeout                Timeout to use when receiving data from the dispatching layer.
+        start_pulse_id                 Initial pulse_id to be saved in hdf5 file
+        end_pulse_id                   Last pulse_id to be saved in hdf5 file
     """
     _logger = getLogger(__name__)
 
