@@ -71,8 +71,7 @@ class BsreadWriter(BaseProcessor):
             raise ValueError(error_message)
 
     def receive_messages(self, connect_address):
-        _logger = getLogger("bsread_receive_message")
-        _logger.info("Connecting to stream '%s'.", connect_address)
+        self._logger.info("Connecting to stream '%s'.", connect_address)
 
         try:
             handler = compact.Handler()
@@ -88,30 +87,29 @@ class BsreadWriter(BaseProcessor):
                     continue
 
                 self._buffer.append(message_data)
-                print(message_data.data.pulse_id, len(self._buffer), self.start_pulse_id)
+                self._logger.debug('Buffer %d (%d)', message_data.data.pulse_id, len(self._buffer))
+
                 # launch an hdf5 writing thread upon start_pulse setup
                 if self.start_pulse_id:
+                    self._logger.info('Start writing thread.')
                     self._writing_thread = Thread(target=self.write_messages, args=(self.start_pulse_id,))
                     self._writing_thread.start()
                     self.start_pulse_id = None
 
         except:
-            _logger.exception("Error while receiving bsread stream.")
+            self._logger.exception("Error while receiving bsread stream.")
 
         finally:
             self._running_event.clear()
 
-        _logger.debug("Stopping bsread h5 thread.")
-
     def write_messages(self, start_pulse_id):
-        _logger = getLogger("bsread_write_message")
-        _logger.info("Writing channels to output_file '%s'.", self.output_file)
+        self._logger.info("Writing channels to output_file '%s'.", self.output_file)
 
         try:
             first_iteration = True
 
             if start_pulse_id < self._buffer[0].data.pulse_id:
-                _logger.warning("start_pulse_id < oldest buffered message pulse_id")
+                self._logger.warning("start_pulse_id < oldest buffered message pulse_id")
 
             with h5py.File(self.output_file, 'w') as h5_file:
                 while self._running_event.is_set():
@@ -134,24 +132,22 @@ class BsreadWriter(BaseProcessor):
                         break
 
                     if msg_pulse_id < start_pulse_id:
+                        self._logger.debug('Discard %d', msg_pulse_id)
                         continue  # discard the message
 
+                    self._logger.debug('Write to hdf5 %d', msg_pulse_id)
                     self.write_message_to_hdf5(h5_file, next_msg, first_iteration)
                     first_iteration = False
 
         except:
-            _logger.exception("Error while writing bsread stream.")
-
-        _logger.debug("Stopping bsread h5 thread.")
+            self._logger.exception("Error while writing bsread stream.")
 
     def is_running(self):
         return self._running_event.is_set()
 
     def start(self):
-        self._logger.debug("Writer started.")
         # Check if all the needed input parameters are available.
         self._validate_parameters()
-        self._logger.debug("Starting mflow_processor.")
 
         self._logger.info("Requesting channels from dispatching layer: %s", self.channels)
         address = dispatcher.request_stream(self.channels)
@@ -167,15 +163,18 @@ class BsreadWriter(BaseProcessor):
             raise ValueError("Cannot start bsread writing process in time.")
 
     def stop(self):
-        self._logger.debug("Writer stopped.")
-
+        self._logger.debug("Stopping bsread_writer.")
         self._running_event.clear()
 
         if self._receiving_thread:
             self._receiving_thread.join()
+            self._logger.debug("Join bsread receiving thread.")
 
         if self._writing_thread:
             self._writing_thread.join()
+            self._logger.debug("Join bsread writing thread.")
+
+        self._logger.debug("bsread_writer stopped.")
 
     @staticmethod
     def write_message_to_hdf5(h5_file, message, first_iteration):
