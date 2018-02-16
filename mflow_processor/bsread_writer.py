@@ -1,6 +1,7 @@
 from logging import getLogger
 from threading import Event, Thread
 from collections import deque
+from time import sleep
 
 import h5py
 
@@ -116,7 +117,8 @@ class BsreadWriter(BaseProcessor):
             with h5py.File(self.output_file, 'w') as h5_file:
                 while self._running_event.is_set():
                     if len(self._buffer) == 0:
-                        continue  # wait for more messages being buffered
+                        sleep(0.1)  # wait for more messages being buffered
+                        continue
 
                     # process the oldest buffered message
                     next_msg = self._buffer.popleft()
